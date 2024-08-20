@@ -1,31 +1,35 @@
 package org.example;
 
-import org.lwjgl.fmod.FMOD;
 import org.lwjgl.opengl.GL;
 
+import static org.example.GabKeys.GAB_KEY_F;
+import static org.example.GabKeys.GAB_KEY_H;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Main {
     public static void main(String[] args) {
 
-        Displaymanager.createDisplay();
+        Window.Init((int) (1920 * 0.75f), (int) (1920 * 0.75));
 
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
         GL.createCapabilities();
 
-        while (!Displaymanager.isCloseRequested()){
+        while (!Window.isCloseRequested()){
 
             // Set the clear color
-            glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-            Displaymanager.updateDisplay();
+            if(Input.keyPressed(GAB_KEY_F)){
+                Window.ToggleFullscreen();
+            }
+            if(Input.keyPressed(GAB_KEY_H)){
+                Window.ToggleWireframe();
+            }
+
+
+            Window.updateDisplay();
         }
 
-        Displaymanager.destroyDisplay();
+        Window.destroyDisplay();
     }
 }
 
