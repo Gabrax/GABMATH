@@ -30,6 +30,7 @@ dependencies {
     implementation("org.lwjgl:lwjgl-opengl")
     implementation("org.lwjgl:lwjgl-par")
     implementation("org.lwjgl:lwjgl-stb")
+    implementation("org.joml:joml:1.10.5")
 
     runtimeOnly("org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives")
     runtimeOnly("org.lwjgl:lwjgl-assimp:$lwjglVersion:$lwjglNatives")

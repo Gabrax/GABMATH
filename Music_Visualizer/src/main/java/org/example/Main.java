@@ -1,7 +1,5 @@
 package org.example;
 
-import org.lwjgl.opengl.GL;
-
 import static org.example.GabKeys.GAB_KEY_F;
 import static org.example.GabKeys.GAB_KEY_H;
 import static org.lwjgl.opengl.GL11.*;
@@ -11,12 +9,14 @@ public class Main {
 
         Window.Init((int) (1920 * 0.75f), (int) (1920 * 0.75));
 
-        GL.createCapabilities();
+        Cube Cube = new Cube();
 
         while (!Window.isCloseRequested()){
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            // Set the clear color
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+            Cube.render();
 
             if(Input.keyPressed(GAB_KEY_F)){
                 Window.ToggleFullscreen();

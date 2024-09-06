@@ -5,49 +5,49 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
-import static java.awt.SystemColor.window;
 import static java.sql.Types.NULL;
-import static org.example.Window.RenderMode.NORMAL;
-import static org.example.Window.RenderMode.WIREFRAME;
-import static org.example.Window.WindowMode.FULLSCREEN;
-import static org.example.Window.WindowMode.WINDOWED;
+import static org.example.testWindow.RenderMode.WIREFRAME;
+import static org.example.testWindow.WindowMode.WINDOWED;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_FILL;
 
-public class Window {
 
-    public static long _window;
-    public static long _monitor;
-    public static GLFWVidMode _mode;
+public class testWindow {
+
+
+    private static long window;
+    private static long _monitor;
+    private static GLFWVidMode _mode;
     public static int _currentWidth = 0;
     public static int _currentHeight = 0;
-    public static int _windowedWidth = 0;
-    public static int _windowedHeight = 0;
-    public static int _fullscreenWidth = 0;
-    public static int _fullscreenHeight = 0;
-    public static int _mouseScreenX = 0;
-    public static int _mouseScreenY = 0;
-    public static boolean _windowHasFocus = true;
-    public static boolean _forceCloseWindow = false;
-    public static int _scrollWheelYOffset = 0;
-    public static WindowMode _windowMode = WINDOWED;
-    public static RenderMode _renderMode = WIREFRAME;
-    public static double prevTime = 0.0;
-    public static double crntTime = 0.0;
-    public static double timeDiff;
-    public static int counter = 0;
-    public static int windowPosX = (_windowedWidth - _windowedWidth) / 2;
-    public static int windowPosY = (_windowedHeight - _windowedHeight) / 2;
-
+    private static int _windowedWidth = 0;
+    private static int _windowedHeight = 0;
+    private static int _fullscreenWidth = 0;
+    private static int _fullscreenHeight = 0;
+    private static int _mouseScreenX = 0;
+    private static int _mouseScreenY = 0;
+    private static boolean _windowHasFocus = true;
+    private static boolean _forceCloseWindow = false;
+    private static int _scrollWheelYOffset = 0;
+    private static WindowMode _windowMode = WINDOWED;
+    private static RenderMode _renderMode = WIREFRAME;
+    private static double prevTime = 0.0;
+    private static double crntTime = 0.0;
+    private static double timeDiff;
+    private static int counter = 0;
+    private static int windowPosX = (_windowedWidth - _windowedWidth) / 2;
+    private static int windowPosY = (_windowedHeight - _windowedHeight) / 2;
 
     public enum WindowMode {
         WINDOWED, FULLSCREEN
@@ -58,58 +58,58 @@ public class Window {
     }
 
     public static void ToggleFullscreen() {
-        if (_windowMode == WindowMode.WINDOWED)
+        if (_windowMode == WINDOWED)
             SetWindowMode(WindowMode.FULLSCREEN);
         else
-            SetWindowMode(WindowMode.WINDOWED);
+            SetWindowMode(WINDOWED);
     }
 
     public static void ToggleWireframe() {
         if (_renderMode == RenderMode.NORMAL) {
-            SetRenderMode(RenderMode.WIREFRAME);
+            SetRenderMode(WIREFRAME);
         } else {
             SetRenderMode(RenderMode.NORMAL);
         }
     }
 
     public static void CreateWindow(WindowMode windowMode) {
-        if (windowMode == WindowMode.WINDOWED) {
+        if (windowMode == WINDOWED) {
             _currentWidth = _windowedWidth;
             _currentHeight = _windowedHeight;
-            _window = glfwCreateWindow(_windowedWidth, _windowedHeight, "Tic Tac Toe", NULL, NULL);
+            window = glfwCreateWindow(_windowedWidth, _windowedHeight, "Tic Tac Toe", NULL, NULL);
             if (_mode != null) {
                 int xpos = (_mode.width() - _currentWidth) / 2;
                 int ypos = (_mode.height() - _currentHeight) / 2;
-                glfwSetWindowPos(_window, xpos, ypos);
+                glfwSetWindowPos(window, xpos, ypos);
             }
         } else if (windowMode == WindowMode.FULLSCREEN) {
             _currentWidth = _fullscreenWidth;
             _currentHeight = _fullscreenHeight;
-            _window = glfwCreateWindow(_fullscreenWidth, _fullscreenHeight, "Tic Tac Toe", _monitor, NULL);
+            window = glfwCreateWindow(_fullscreenWidth, _fullscreenHeight, "Tic Tac Toe", _monitor, NULL);
         }
         _windowMode = windowMode;
     }
 
     public static void SetWindowMode(WindowMode windowMode) {
-        if (windowMode == WindowMode.WINDOWED) {
+        if (windowMode == WINDOWED) {
             _currentWidth = _windowedWidth;
             _currentHeight = _windowedHeight;
-            glfwSetWindowMonitor(_window, NULL, 0, 0, _windowedWidth, _windowedHeight, 0);
+            glfwSetWindowMonitor(window, NULL, 0, 0, _windowedWidth, _windowedHeight, 0);
             if (_mode != null) {
                 int xpos = (_mode.width() - _currentWidth) / 2;
                 int ypos = (_mode.height() - _currentHeight) / 2;
-                glfwSetWindowPos(_window, xpos, ypos);
+                glfwSetWindowPos(window, xpos, ypos);
             }
         } else if (windowMode == WindowMode.FULLSCREEN) {
             _currentWidth = _fullscreenWidth;
             _currentHeight = _fullscreenHeight;
-            glfwSetWindowMonitor(_window, _monitor, 0, 0, _fullscreenWidth, _fullscreenHeight, _mode.refreshRate());
+            glfwSetWindowMonitor(window, _monitor, 0, 0, _fullscreenWidth, _fullscreenHeight, _mode.refreshRate());
         }
         _windowMode = windowMode;
     }
 
     public static void SetRenderMode(RenderMode renderMode) {
-        if (renderMode == RenderMode.WIREFRAME) {
+        if (renderMode == WIREFRAME) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         } else if (renderMode == RenderMode.NORMAL) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -117,30 +117,17 @@ public class Window {
         _renderMode = renderMode;
     }
 
-    public static void Init(int width, int height){
+    public void init(int width, int height) {
 
         GLFWErrorCallback.createPrint(System.err).set();
 
-
-        if ( !glfwInit() )
+        if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
+        }
 
-
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-
-        // Resolution and window size
-        // Setup error callback
-        GLFWErrorCallback.createPrint(System.err).set();
-
-        if (!glfwInit())
-            throw new IllegalStateException("Unable to initialize GLFW");
-
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        GLFW.glfwDefaultWindowHints();
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
         // Resolution and window size
         _monitor = glfwGetPrimaryMonitor();
@@ -162,14 +149,19 @@ public class Window {
 
         CreateWindow(WINDOWED);
 
-        if (_window == NULL) {
+        if (window == NULL) {
             System.out.println("Failed to create GLFW window");
-            cleanUp();
+            cleanup();
             return;
         }
 
+//        window = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL);
+//        if (window == MemoryUtil.NULL) {
+//            throw new RuntimeException("Failed to create the GLFW window");
+//        }
+
         try {
-            InputStream is = Window.class.getClassLoader().getResourceAsStream("logo.png");
+            InputStream is = testWindow.class.getClassLoader().getResourceAsStream("logo.png");
             if (is == null) {
                 throw new IOException("Resource not found");
             }
@@ -183,7 +175,7 @@ public class Window {
             imageBuffer.put(0, image);
 
             // Set the window icon
-            GLFW.glfwSetWindowIcon(_window, imageBuffer);
+            GLFW.glfwSetWindowIcon(window, imageBuffer);
 
             // Clean up
             imageBuffer.free();
@@ -192,55 +184,51 @@ public class Window {
             e.printStackTrace();
         }
 
-
-        glfwSetKeyCallback(_window, (window, key, scancode, action, mods) -> {
+        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true);
         });
 
-
-        glfwMakeContextCurrent(_window);
-        glfwSwapInterval(0);
-        glfwShowWindow(_window);
+        GLFW.glfwMakeContextCurrent(window);
+        GLFW.glfwSwapInterval(1); // Enable v-sync
+        GLFW.glfwShowWindow(window);
 
         GL.createCapabilities();
 
         FrameCallback();
     }
 
-    public static void updateDisplay() {
-        Input.update();
-
-        glfwSwapBuffers(_window);
-        glfwPollEvents();
+    public static long getWindow() {
+        return window;
     }
+    private void FrameCallback() {
+        glfwSetFramebufferSizeCallback(window, (window, width, height) -> glViewport(0, 0, width, height));
 
-    public static void destroyDisplay() {
-        cleanUp();
-        glfwTerminate();
-        Objects.requireNonNull(glfwSetErrorCallback(null)).free();
-    }
-
-    private static void cleanUp() {
-        glfwFreeCallbacks(_window);
-        glfwDestroyWindow(_window);
-    }
-
-    private static void FrameCallback() {
-        glfwSetFramebufferSizeCallback(_window, (window, width, height) -> {
-            glViewport(0, 0, width, height);
-        });
-
-        glfwSetWindowFocusCallback(_window, Window::windowFocusCallback);
+        glfwSetWindowFocusCallback(window, testWindow::windowFocusCallback);
     }
 
     private static void windowFocusCallback(long window, boolean focused) {
         _windowHasFocus = focused;
     }
 
-    public static boolean isCloseRequested() {
-        return glfwWindowShouldClose(_window);
+    public boolean shouldClose() {
+        return GLFW.glfwWindowShouldClose(window);
     }
+
+    public void updateWindow() {
+        Input.update();
+        GLFW.glfwSwapBuffers(window);
+        GLFW.glfwPollEvents();
+    }
+
+    public void cleanup() {
+        if (window != MemoryUtil.NULL) {
+            glfwFreeCallbacks(window);
+            GLFW.glfwDestroyWindow(window);
+        }
+        GLFW.glfwTerminate();
+    }
+
     private static ByteBuffer BufferedImageToByteBuffer(BufferedImage image) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 4);
         for (int y = 0; y < image.getHeight(); y++) {
@@ -255,6 +243,7 @@ public class Window {
         buffer.flip();
         return buffer;
     }
+
     public static int getScrollWheelYOffset()
     {
         return _scrollWheelYOffset;
