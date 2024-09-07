@@ -2,119 +2,87 @@ package org.example;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Math;
+
+import static org.example.GabKeys.*;
 
 public class Camera {
+    private final Vector3f position = new Vector3f(-1.94f, 1.25f, 6.14f); // Start position above ground level
+    private Vector3f front = new Vector3f(0, 0, -1); // Direction the camera is facing
+    private Vector3f up = new Vector3f(0, 1, 0);    // Up vector
+    private Vector3f right = new Vector3f();        // Right vector
+    private float movementSpeed = 0.001f;              // Movement speed
+    private float yaw = -90.0f;                      // Yaw
+    private float pitch = 0.0f;                      // Pitch
 
-    public enum CameraMovement {
-        FORWARD,
-        BACKWARD,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN
-    }
-
-    // Default camera values
-    private static final float YAW = -90.0f;
-    private static final float PITCH = 0.0f;
-    private static final float SPEED = 2.5f;
-    private static final float SENSITIVITY = 0.1f;
-    private static final float ZOOM = 45.0f;
-
-    // Camera attributes
-    private Vector3f position;
-    private Vector3f front;
-    private Vector3f up;
-    private Vector3f right;
-    private Vector3f worldUp;
-    private float yaw;
-    private float pitch;
-    private float movementSpeed;
-    private float mouseSensitivity;
-    public float zoom;
-
-    // Constructor with vectors
-    public Camera(Vector3f position, Vector3f up, float yaw, float pitch) {
-        this.position = position;
-        this.worldUp = up;
-        this.yaw = yaw;
-        this.pitch = pitch;
-        this.front = new Vector3f(0.0f, 0.0f, -1.0f);
-        this.movementSpeed = SPEED;
-        this.mouseSensitivity = SENSITIVITY;
-        this.zoom = ZOOM;
+    public Camera() {
         updateCameraVectors();
     }
 
-    // Constructor with scalar values
-    public Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) {
-        this(new Vector3f(posX, posY, posZ), new Vector3f(upX, upY, upZ), yaw, pitch);
+    public void move() {
+        // Update camera vectors to reflect current yaw and pitch
+        updateCameraVectors();
+
+        // Calculate movement vectors
+        Vector3f forwardMovement = new Vector3f(front).mul(movementSpeed);
+        Vector3f strafeMovement = new Vector3f(right).mul(movementSpeed);
+        Vector3f verticalMovement = new Vector3f(up).mul(movementSpeed);
+
+        // Keyboard movement handling
+        if (Input.keyDown(GAB_KEY_W)) {
+            position.add(forwardMovement);  // Move forward
+        }
+        if (Input.keyDown(GAB_KEY_S)) {
+            position.sub(forwardMovement);  // Move backward
+        }
+        if (Input.keyDown(GAB_KEY_A)) {
+            position.sub(strafeMovement);   // Move left
+        }
+        if (Input.keyDown(GAB_KEY_D)) {
+            position.add(strafeMovement);   // Move right
+        }
+        if (Input.keyDown(GAB_KEY_SPACE)) {
+            position.add(verticalMovement); // Move up
+        }
+        if (Input.keyDown(GAB_KEY_LEFT_CONTROL)) {
+            position.sub(verticalMovement); // Move down
+        }
     }
 
-    // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+    private void updateCameraVectors() {
+        // Calculate the front vector
+        float cosYaw = (float) Math.cos(Math.toRadians(yaw));
+        float sinYaw = (float) Math.sin(Math.toRadians(yaw));
+        float cosPitch = (float) Math.cos(Math.toRadians(pitch));
+        float sinPitch = (float) Math.sin(Math.toRadians(pitch));
+
+        front.x = cosYaw * cosPitch;
+        front.y = sinPitch;
+        front.z = sinYaw * cosPitch;
+        front.normalize();
+
+        // Recalculate right and up vectors
+        right.set(front).cross(up).normalize(); // Right vector is perpendicular to the front and up vectors
+        up.set(right).cross(front).normalize(); // Up vector recalculated to ensure orthogonality
+    }
+
     public Matrix4f getViewMatrix() {
         Matrix4f viewMatrix = new Matrix4f();
-        return viewMatrix.lookAt(position, position.add(front, new Vector3f()), up);
+        viewMatrix.lookAt(position, new Vector3f(position).add(front), up); // Look from position to position + front direction
+        return viewMatrix;
     }
 
-    // Processes input received from any keyboard-like input system
-    public void processKeyboard(CameraMovement direction, float deltaTime) {
-        float velocity = movementSpeed * deltaTime;
-        if (direction == CameraMovement.FORWARD)
-            position.add(front.mul(velocity));
-        if (direction == CameraMovement.BACKWARD)
-            position.sub(front.mul(velocity));
-        if (direction == CameraMovement.LEFT)
-            position.sub(right.mul(velocity));
-        if (direction == CameraMovement.RIGHT)
-            position.add(right.mul(velocity));
-        if (direction == CameraMovement.UP)
-            position.y += 2.5f * velocity;
-        if (direction == CameraMovement.DOWN)
-            position.y -= 2.5f * velocity;
+    // Getters and setters for position, pitch, and yaw
+    public Vector3f getPosition() {
+        return position;
     }
 
-    // Processes input received from a mouse input system
-    public void processMouseMovement(float xoffset, float yoffset, boolean constrainPitch) {
-        xoffset *= mouseSensitivity;
-        yoffset *= mouseSensitivity;
-
-        yaw += xoffset;
-        pitch += yoffset;
-
-        // Make sure that when pitch is out of bounds, screen doesn't get flipped
-        if (constrainPitch) {
-            if (pitch > 89.0f)
-                pitch = 89.0f;
-            if (pitch < -89.0f)
-                pitch = -89.0f;
-        }
-
-        // Update Front, Right and Up Vectors using the updated Euler angles
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
         updateCameraVectors();
     }
 
-    // Processes input received from a mouse scroll-wheel event
-    public void processMouseScroll(float yoffset) {
-        zoom -= yoffset;
-        if (zoom < 1.0f)
-            zoom = 1.0f;
-        if (zoom > 45.0f)
-            zoom = 45.0f;
-    }
-
-    // Calculates the front vector from the Camera's (updated) Euler Angles
-    private void updateCameraVectors() {
-        // Calculate the new Front vector
-        Vector3f front = new Vector3f();
-        front.x = (float) Math.cos(Math.toRadians(yaw)) * (float) Math.cos(Math.toRadians(pitch));
-        front.y = (float) Math.sin(Math.toRadians(pitch));
-        front.z = (float) Math.sin(Math.toRadians(yaw)) * (float) Math.cos(Math.toRadians(pitch));
-        this.front = front.normalize();
-
-        // Re-calculate the Right and Up vector
-        right = front.cross(worldUp).normalize();
-        up = right.cross(front).normalize();
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
+        updateCameraVectors();
     }
 }

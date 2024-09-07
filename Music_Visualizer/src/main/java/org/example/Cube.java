@@ -1,5 +1,8 @@
 package org.example;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -10,31 +13,70 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Cube {
+
     private int vaoID;
     private int vboID;
     private LoadShader shader;
+    private Vector3f position;
 
     private final float[] vertices = {
-            // Positions        // Colors
-            -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // Bottom-left
-            0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
-            0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // Top-right
-            0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // Top-right
-            -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, // Top-left
-            -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f  // Bottom-left
+            // Positions          // Colors
+            -0.25f, -0.25f, -0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            0.25f, -0.25f, -0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f,  0.25f, -0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            0.25f,  0.25f, -0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            -0.25f,  0.25f, -0.25f,   1.0f, 1.0f, 0.0f,  // Yellow
+            -0.25f, -0.25f, -0.25f,   1.0f, 0.0f, 0.0f,  // Red
+
+            -0.25f, -0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            0.25f, -0.25f,  0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f,  0.25f,  0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            0.25f,  0.25f,  0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            -0.25f,  0.25f,  0.25f,   1.0f, 1.0f, 0.0f,  // Yellow
+            -0.25f, -0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+
+            -0.25f,  0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            -0.25f,  0.25f, -0.25f,   1.0f, 1.0f, 0.0f,  // Yellow
+            -0.25f, -0.25f, -0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            -0.25f, -0.25f, -0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            -0.25f, -0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            -0.25f,  0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+
+            0.25f,  0.25f,  0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            0.25f,  0.25f, -0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f, -0.25f, -0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f, -0.25f, -0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f, -0.25f,  0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f,  0.25f,  0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+
+            -0.25f, -0.25f, -0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            0.25f, -0.25f, -0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f, -0.25f,  0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            0.25f, -0.25f,  0.25f,   0.0f, 1.0f, 0.0f,  // Green
+            -0.25f, -0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            -0.25f, -0.25f, -0.25f,   1.0f, 0.0f, 0.0f,  // Red
+
+            -0.25f,  0.25f, -0.25f,   1.0f, 1.0f, 0.0f,  // Yellow
+            0.25f,  0.25f, -0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            0.25f,  0.25f,  0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            0.25f,  0.25f,  0.25f,   0.0f, 0.0f, 1.0f,  // Blue
+            -0.25f,  0.25f,  0.25f,   1.0f, 0.0f, 0.0f,  // Red
+            -0.25f,  0.25f, -0.25f,   1.0f, 1.0f, 0.0f   // Yellow
     };
 
-    public Cube() {
+    // Constructor to set up the cube's VAO, VBO, shaders, and position
+    public Cube(Vector3f position) {
+        this.position = position;
         setupShaders();
         setup();
     }
 
-        private void setupShaders() {
-        String vertexShaderPath = "cubeV.glsl";
-        String fragmentShaderPath = "cubeF.glsl";
-        shader = new LoadShader(vertexShaderPath, fragmentShaderPath);
+    // Set up the shader program
+    private void setupShaders() {
+        shader = new LoadShader("cubeV.glsl", "cubeF.glsl");
     }
 
+    // Set up the cube VAO and VBO
     private void setup() {
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
@@ -57,10 +99,28 @@ public class Cube {
         MemoryUtil.memFree(vertexBuffer);
     }
 
-    public void render() {
+    // Render the cube
+    public void render(Matrix4f viewMatrix, Matrix4f projectionMatrix) {
         shader.use();
+
+        // Set the model matrix (for positioning the cube)
+        Matrix4f model = new Matrix4f();
+        model.translate(position); // Translate to the cube's position
+        float angle = (float) GLFW.glfwGetTime(); // Time-based angle for rotation
+        model.rotate((float) Math.toRadians(angle * 50), 0.1f, 1.0f, 0.0f); //
+
+        // Set the model matrix
+        shader.setMat4("model", model);
+
+        // Set the view matrix
+        shader.setMat4("view", viewMatrix);
+
+        // Set the projection matrix
+        shader.setMat4("projection", projectionMatrix);
+
+        // Render the cube
         glBindVertexArray(vaoID);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
     }
 

@@ -13,11 +13,8 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import static java.awt.SystemColor.window;
 import static java.sql.Types.NULL;
-import static org.example.Window.RenderMode.NORMAL;
 import static org.example.Window.RenderMode.WIREFRAME;
-import static org.example.Window.WindowMode.FULLSCREEN;
 import static org.example.Window.WindowMode.WINDOWED;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -76,7 +73,7 @@ public class Window {
         if (windowMode == WindowMode.WINDOWED) {
             _currentWidth = _windowedWidth;
             _currentHeight = _windowedHeight;
-            _window = glfwCreateWindow(_windowedWidth, _windowedHeight, "Tic Tac Toe", NULL, NULL);
+            _window = glfwCreateWindow(_windowedWidth, _windowedHeight, "Music_Visualizer", NULL, NULL);
             if (_mode != null) {
                 int xpos = (_mode.width() - _currentWidth) / 2;
                 int ypos = (_mode.height() - _currentHeight) / 2;
@@ -85,7 +82,7 @@ public class Window {
         } else if (windowMode == WindowMode.FULLSCREEN) {
             _currentWidth = _fullscreenWidth;
             _currentHeight = _fullscreenHeight;
-            _window = glfwCreateWindow(_fullscreenWidth, _fullscreenHeight, "Tic Tac Toe", _monitor, NULL);
+            _window = glfwCreateWindow(_fullscreenWidth, _fullscreenHeight, "Music_Visualizer", _monitor, NULL);
         }
         _windowMode = windowMode;
     }
@@ -204,6 +201,20 @@ public class Window {
         glfwShowWindow(_window);
 
         GL.createCapabilities();
+
+        // Set the cursor mode to disabled when the window is focused
+        glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+        // Optional: Set a callback to handle focus changes if you want to reset the cursor mode
+        glfwSetWindowFocusCallback(_window, (window, focused) -> {
+            if (focused) {
+                // Hide and capture the cursor when the window is focused
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            } else {
+                // Show the cursor when the window loses focus
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
+        });
 
         FrameCallback();
     }

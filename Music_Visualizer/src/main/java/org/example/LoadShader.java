@@ -69,6 +69,10 @@ public class LoadShader {
         return code.toString();
     }
 
+    public int getProgramID() {
+        return ID;
+    }
+
     // Activates the shader program
     public void use() {
         GL20.glUseProgram(ID);
