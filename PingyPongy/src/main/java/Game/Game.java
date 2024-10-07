@@ -6,8 +6,9 @@ import static com.raylib.Jaylib.*;
 
 public class Game {
     public static class Resources {
-        static Image ball;
-        static Texture ballTex;
+
+        public static Image ball;
+        public static Texture ballTex;
 
         static void LoadResources() {
             ball = LoadImage("resources/ball.png");
@@ -17,6 +18,7 @@ public class Game {
     }
 
     public static class MusicPlayer {
+
         static Music music;
         static Sound hitPoint;
 
@@ -34,6 +36,7 @@ public class Game {
     }
 
     public static class Window {
+
         static int Height = 600;
         static int Width = 1000;
         public static boolean pause = false;
@@ -47,6 +50,7 @@ public class Game {
         }
 
         public static void resize() {
+
             if (IsKeyPressed(KEY_F)) {
                 int display = GetCurrentMonitor();
 
@@ -61,6 +65,7 @@ public class Game {
     }
 
     public static class Player1 {
+
         static Jaylib.Vector2 pos = new Jaylib.Vector2(50.0f, Window.Height - 250.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
         static Jaylib.Vector2 size = new Jaylib.Vector2(20.0f, 200.0f);
@@ -71,6 +76,7 @@ public class Game {
         }
 
         public static void movePlayer() {
+
             if (IsKeyDown(KEY_W)) {
                 pos.y(pos.y() - velocity * GetFrameTime());
                 velocity = IsKeyDown(KEY_LEFT_SHIFT) ? 700 : 500;
@@ -83,6 +89,7 @@ public class Game {
     }
 
     public static class Player2 {
+
         static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width - 45.0f, Window.Height - 250.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
         static Jaylib.Vector2 size = new Jaylib.Vector2(20.0f, 200.0f);
@@ -94,6 +101,7 @@ public class Game {
         }
 
         public static void movePlayer() {
+
             if (IsKeyDown(KEY_UP)) {
                 pos.y(pos.y() - velocity * GetFrameTime());
                 velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 700 : 500;
@@ -105,6 +113,7 @@ public class Game {
         }
 
         static void AI() {
+
             if (isMov) {
                 pos.y(pos.y() + 0.1f);
                 if (pos.y() >= 5) {
@@ -120,22 +129,32 @@ public class Game {
     }
 
     public static class Ball {
+
         public static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width / 2.0f, Window.Height / 2.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
-        static float radius = 20.0f;
+        public static float radius = 20.0f;
         static float velocityX = 300.0f;
         static float velocityY = 300.0f;
+        static float rotation = 0.0f;
 
         public static void draw() {
             DrawTexturePro(Resources.ballTex,
                     new Jaylib.Rectangle(0, 0, Resources.ballTex.width(), Resources.ballTex.height()),
-                    new Jaylib.Rectangle(pos.x() - radius, pos.y() - radius, radius * 2, radius * 2),
-                    new Jaylib.Vector2(radius, radius), 0, RAYWHITE);
+                    new Jaylib.Rectangle(pos.x(), pos.y(), radius * 2, radius * 2),
+                    new Jaylib.Vector2(radius, radius), rotation, RAYWHITE);
         }
 
         public static void letBounce() {
+
             pos.x(pos.x() + velocityX * GetFrameTime());
             pos.y(pos.y() + velocityY * GetFrameTime());
+
+            float speed = (float) Math.sqrt((velocityX * velocityX) + (velocityY * velocityY));  // Calculate the total speed
+            rotation += speed * GetFrameTime();
+
+            if (rotation >= 360.0f) {
+                rotation -= 360.0f;
+            }
 
             if (pos.y() < 0) {
                 pos.y(0);
@@ -173,9 +192,11 @@ public class Game {
         Ball.pos = new Jaylib.Vector2(Ball.initPos.x(),Ball.initPos.y());
         Ball.velocityX = 300.0f;
         Ball.velocityY = 300.0f;
+        Ball.rotation = 0.0f;
     }
 
     public static class ScoreBoard {
+
         public static int p1 = 0;
         public static int p2 = 0;
         static boolean p1Wins = false;
