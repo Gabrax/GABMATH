@@ -1,29 +1,35 @@
-import static com.raylib.Jaylib.RAYWHITE;
-import static com.raylib.Jaylib.VIOLET;
-import static com.raylib.Raylib.*;
-
+import static com.raylib.Jaylib.*;
+import static Game.Game.*;
 public class Main {
-    public static void main(String args[]) {
-        InitWindow(800, 450, "Demo");
-        SetTargetFPS(60);
-        Camera3D camera = new Camera3D()
-                ._position(new Vector3().x(18).y(16).z(18))
-                .target(new Vector3())
-                .up(new Vector3().x(0).y(1).z(0))
-                .fovy(45).projection(CAMERA_PERSPECTIVE);
+    public static void main(String[] args) {
+
+        Window.init();
+        MusicPlayer.Init();
 
         while (!WindowShouldClose()) {
-            UpdateCamera(camera, CAMERA_ORBITAL);
+
+            MusicPlayer.Update();
+            Window.resize();
+
+            if(IsKeyPressed(KEY_SPACE)) Window.pause = !Window.pause;
+            if(!Window.pause){
+                Ball.letBounce();
+                Player1.movePlayer();
+                Player2.movePlayer();
+            }
+            if(IsKeyPressed(KEY_R)) Reset();
+            ScoreBoard.UpdateBoard();
 
             BeginDrawing();
-                ClearBackground(RAYWHITE);
-                        BeginMode3D(camera);
-                            DrawGrid(20, 1.0f);
-                        EndMode3D();
+                ClearBackground(BLACK);
+                    DrawRectangleRoundedLines(Player1.getPlayer1(),2.0f,4,2.0f,RED);
+                    DrawRectangleRoundedLines(Player2.getPlayer2(),2.0f,4,2.0f,BLUE);
+                    Ball.draw();
+            DrawText("PRESS SPACE to PAUSE BALL MOVEMENT", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
+            DrawText(DEBUG("BallPos",Ball.pos.x(),Ball.pos.y()),0,0,20,LIGHTGRAY);
+            DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), 450, 60, 40, LIGHTGRAY);
 
-                        DrawText("Hello world", 190, 200, 20, VIOLET);
-                        DrawFPS(20, 20);
-
+            if (Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
             EndDrawing();
         }
         CloseWindow();
