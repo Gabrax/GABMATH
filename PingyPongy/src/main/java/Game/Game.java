@@ -1,6 +1,9 @@
 package Game;
 
 import com.raylib.Jaylib;
+
+import java.io.File;
+
 import static com.raylib.Raylib.*;
 import static com.raylib.Jaylib.*;
 
@@ -11,7 +14,8 @@ public class Game {
         public static Texture ballTex;
 
         static void LoadResources() {
-            ball = LoadImage("resources/ball.png");
+            String path = new File("resources/ball.png").getAbsolutePath();
+            ball = LoadImage(path);
             ballTex = LoadTextureFromImage(ball);
             UnloadImage(ball);
         }
@@ -43,7 +47,7 @@ public class Game {
 
         public static void init() {
             SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
-            InitWindow(Width, Height, "hello");
+            InitWindow(Width, Height, "Pingy Pongy");
             Resources.LoadResources();
             SetTargetFPS(60);
             DisableCursor();

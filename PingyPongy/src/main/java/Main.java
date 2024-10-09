@@ -9,8 +9,6 @@ public class Main {
         Window.init();
         MusicPlayer.Init();
 
-        Image ball = LoadImage("resources/ball.png");
-
         while (!WindowShouldClose()) {
 
             MusicPlayer.Update();
