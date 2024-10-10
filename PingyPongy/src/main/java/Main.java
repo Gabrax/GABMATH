@@ -12,7 +12,7 @@ public class Main {
         while (!WindowShouldClose()) {
 
             MusicPlayer.Update();
-            Window.resize();
+            Resize();
 
             if(IsKeyPressed(KEY_SPACE)) Window.pause = !Window.pause;
             if(!Window.pause){
@@ -33,7 +33,7 @@ public class Main {
 
                 DrawText("SPACE to Pause/Unpause", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
                 DrawText(DEBUG("BallPos",Ball.pos.x(),Ball.pos.y()),0,0,20,LIGHTGRAY);
-                DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), 450, 60, 40, LIGHTGRAY);
+                DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), ScoreBoard.x, ScoreBoard.y, 40, LIGHTGRAY);
                 if (Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
             EndDrawing();
         }

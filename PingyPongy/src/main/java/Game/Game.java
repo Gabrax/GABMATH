@@ -30,7 +30,7 @@ public class Game {
             InitAudioDevice();
             music = LoadMusicStream("resources/music.mp3");
             PlayMusicStream(music);
-            SetMusicVolume(music, 0.25f);
+            SetMusicVolume(music, 0.10f);
             hitPoint = LoadSound("resources/hit.wav");
         }
 
@@ -44,6 +44,7 @@ public class Game {
         static int Height = 600;
         static int Width = 1000;
         public static boolean pause = false;
+        public static boolean isResized = false;
 
         public static void init() {
             SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
@@ -53,41 +54,37 @@ public class Game {
             DisableCursor();
         }
 
-        public static void resize() {
 
-            if (IsKeyPressed(KEY_F)) {
-                int display = GetCurrentMonitor();
-
-                if (IsWindowFullscreen()) {
-                    SetWindowSize(GetMonitorWidth(display), GetMonitorHeight(display));
-                } else {
-                    SetWindowSize(Width, Height);
-                }
-                ToggleBorderlessWindowed();
-            }
-        }
     }
 
     public static class Player1 {
 
         static Jaylib.Vector2 pos = new Jaylib.Vector2(50.0f, Window.Height - 250.0f);
-        static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
+        static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(), pos.y());
+        static Jaylib.Vector2 res_Pos = new Jaylib.Vector2((float) Window.Width - 750.0f, (float) Window.Height + 10.0f);
         static Jaylib.Vector2 size = new Jaylib.Vector2(20.0f, 200.0f);
         static float velocity = 500;
 
         public static Jaylib.Rectangle getPlayer1() {
-            return new Jaylib.Rectangle(pos.x() - size.x()/2, pos.y() - size.y()/2, 10, 100);
+            return new Jaylib.Rectangle(pos.x() - size.x() / 2, pos.y() - size.y() / 2, 10, 100);
+        }
+
+        public static void updatePosition() {
+            if (Window.isResized) {
+                pos = new Jaylib.Vector2(res_Pos.x(), res_Pos.y());
+            } else {
+                pos = new Jaylib.Vector2(initPos.x(), initPos.y());
+            }
         }
 
         public static void movePlayer() {
-
             if (IsKeyDown(KEY_W)) {
                 pos.y(pos.y() - velocity * GetFrameTime());
-                velocity = IsKeyDown(KEY_LEFT_SHIFT) ? 700 : 500;
+                velocity = IsKeyDown(KEY_LEFT_SHIFT) ? 900 : 500;
             }
             if (IsKeyDown(KEY_S)) {
                 pos.y(pos.y() + velocity * GetFrameTime());
-                velocity = IsKeyDown(KEY_LEFT_SHIFT) ? 700 : 500;
+                velocity = IsKeyDown(KEY_LEFT_SHIFT) ? 900 : 500;
             }
         }
     }
@@ -96,6 +93,7 @@ public class Game {
 
         static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width - 45.0f, Window.Height - 250.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
+        static Jaylib.Vector2 res_Pos = new Jaylib.Vector2((float) Window.Width + 700.0f, (float) Window.Height + 10.0f);
         static Jaylib.Vector2 size = new Jaylib.Vector2(20.0f, 200.0f);
         static boolean isMov = true;
         static float velocity = 500;
@@ -104,15 +102,23 @@ public class Game {
             return new Jaylib.Rectangle(pos.x() - size.x()/2, pos.y() - size.y()/2, 10, 100);
         }
 
+        public static void updatePosition() {
+            if (Window.isResized) {
+                pos = new Jaylib.Vector2(res_Pos.x(), res_Pos.y());
+            } else {
+                pos = new Jaylib.Vector2(initPos.x(), initPos.y());
+            }
+        }
+
         public static void movePlayer() {
 
             if (IsKeyDown(KEY_UP)) {
                 pos.y(pos.y() - velocity * GetFrameTime());
-                velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 700 : 500;
+                velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 900 : 500;
             }
             if (IsKeyDown(KEY_DOWN)) {
                 pos.y(pos.y() + velocity * GetFrameTime());
-                velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 700 : 500;
+                velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 900 : 500;
             }
         }
 
@@ -190,17 +196,10 @@ public class Game {
         }
     }
 
-    public static void Reset() {
-        Player1.pos = new Jaylib.Vector2(Player1.initPos.x(),Player1.initPos.y());
-        Player2.pos = new Jaylib.Vector2(Player2.initPos.x(),Player2.initPos.y());
-        Ball.pos = new Jaylib.Vector2(Ball.initPos.x(),Ball.initPos.y());
-        Ball.velocityX = 300.0f;
-        Ball.velocityY = 300.0f;
-        Ball.rotation = 0.0f;
-    }
-
     public static class ScoreBoard {
 
+        public static int x = 450;
+        public static int y = 60;
         public static int p1 = 0;
         public static int p2 = 0;
         static boolean p1Wins = false;
@@ -225,8 +224,40 @@ public class Game {
                 p2Wins = false;
             }
         }
+
+        public static void updatePosition(){
+            if(Window.isResized){
+                x = 900;
+            }else x = 450;
+        }
     }
 
+    public static void Resize() {
+
+        if (IsKeyPressed(KEY_F)) {
+            ToggleBorderlessWindowed();
+            Window.isResized = !Window.isResized;
+            Player1.updatePosition();
+            Player2.updatePosition();
+            ScoreBoard.updatePosition();
+        }
+    }
+
+    public static void Reset() {
+
+        if(Window.isResized){
+            Player1.pos = new Jaylib.Vector2(Player1.res_Pos.x(),Player1.res_Pos.y());
+            Player2.pos = new Jaylib.Vector2(Player2.res_Pos.x(),Player2.res_Pos.y());
+        }else{
+            Player1.pos = new Jaylib.Vector2(Player1.initPos.x(),Player1.initPos.y());
+            Player2.pos = new Jaylib.Vector2(Player2.initPos.x(),Player2.initPos.y());
+        }
+
+        Ball.pos = new Jaylib.Vector2(Ball.initPos.x(),Ball.initPos.y());
+        Ball.velocityX = 300.0f;
+        Ball.velocityY = 300.0f;
+        Ball.rotation = 0.0f;
+    }
 
 
     public static String DEBUG(String str, float arg1, float arg2){
