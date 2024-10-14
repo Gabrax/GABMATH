@@ -53,8 +53,6 @@ public class Game {
             SetTargetFPS(60);
             DisableCursor();
         }
-
-
     }
 
     public static class Player1 {
@@ -143,8 +141,8 @@ public class Game {
         public static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width / 2.0f, Window.Height / 2.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
         public static float radius = 20.0f;
-        static float velocityX = 300.0f;
-        static float velocityY = 300.0f;
+        public static float velocityX = 300.0f;
+        public static float velocityY = 300.0f;
         static float rotation = 0.0f;
 
         public static void draw() {
