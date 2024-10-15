@@ -24,14 +24,6 @@ public class Main {
             if(IsKeyPressed(KEY_R)) Reset();
             ScoreBoard.UpdateBoard();
 
-            if(IsKeyPressed(KEY_H)){
-                Ball.velocityX += 50.0f;
-                Ball.velocityY += 50.0f;
-            }else if(IsKeyPressed(KEY_J)){
-                Ball.velocityX -= 50.0f;
-                Ball.velocityY -= 50.0f;
-            }
-
             BeginDrawing();
                 ClearBackground(BLACK);
 
@@ -40,8 +32,10 @@ public class Main {
                     Ball.draw();
 
                 DrawText("SPACE to Pause/Unpause", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
-                DrawText(DEBUG("Ball velocity",Ball.velocityX,Ball.velocityY),0,0,20,LIGHTGRAY);
+                DrawText(DEBUG("Ball velocity",Ball.speed(),0),0,0,20,LIGHTGRAY);
                 DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), ScoreBoard.x, ScoreBoard.y, 40, LIGHTGRAY);
+                DrawText(DEBUG("Air", Ball.airResistance, 0), 0, 30, 20, LIGHTGRAY);
+                DrawText(DEBUG("Magnus", Ball.magnus, 0), 0, 50, 20, LIGHTGRAY);
                 if (Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
             EndDrawing();
         }

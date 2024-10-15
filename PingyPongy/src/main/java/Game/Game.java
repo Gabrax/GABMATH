@@ -1,6 +1,7 @@
 package Game;
 
 import com.raylib.Jaylib;
+import org.bytedeco.javacpp.FloatPointer;
 
 import java.io.File;
 
@@ -137,13 +138,17 @@ public class Game {
     }
 
     public static class Ball {
-
         public static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width / 2.0f, Window.Height / 2.0f);
-        static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
+        static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(), pos.y());
         public static float radius = 20.0f;
         public static float velocityX = 300.0f;
         public static float velocityY = 300.0f;
         static float rotation = 0.0f;
+        static float gravity = 9.8f;
+        static float friction = 0.05f;
+        public static float airResistance = 0.01f;
+        public static float magnus = 0.001f;
+        static float speed = (float) Math.sqrt((velocityX * velocityX) + (velocityY * velocityY));
 
         public static void draw() {
             DrawTexturePro(Resources.ballTex,
@@ -153,16 +158,32 @@ public class Game {
         }
 
         public static void letBounce() {
-
+            // Update position based on velocity
             pos.x(pos.x() + velocityX * GetFrameTime());
             pos.y(pos.y() + velocityY * GetFrameTime());
 
-            float speed = (float) Math.sqrt((velocityX * velocityX) + (velocityY * velocityY));  // Calculate the total speed
+            // Calculate speed and update rotation
             rotation += speed * GetFrameTime();
 
+            // Ensure rotation stays within bounds
             if (rotation >= 360.0f) {
                 rotation -= 360.0f;
             }
+
+            // Apply gravity
+            velocityY += gravity * GetFrameTime();
+
+            // Apply air resistance
+            velocityX -= airResistance * velocityX * GetFrameTime();
+            velocityY -= airResistance * velocityY * GetFrameTime();
+
+            // Calculate Magnus effect
+            float magnusForceX = -magnus * rotation * velocityY; // Force perpendicular to velocityX
+            float magnusForceY = magnus * rotation * velocityX;  // Force perpendicular to velocityY
+
+            // Apply Magnus force to velocity
+            velocityX += magnusForceX * GetFrameTime();
+            velocityY += magnusForceY * GetFrameTime();
 
             if (pos.y() < 0) {
                 pos.y(0);
@@ -178,19 +199,31 @@ public class Game {
 
             if (CheckCollisionCircleRec(pos, radius, Player1.getPlayer1())) {
                 if (velocityX < 0) {
-                    velocityX *= -1.1f;
+                    velocityX *= -1.1f; // Bounce back with increased speed
                     velocityY = (pos.y() - Player1.pos.y()) / (Player1.size.y() / 2) * velocityX;
+                    velocityX -= friction * velocityX; // Apply friction
                 }
                 PlaySound(MusicPlayer.hitPoint);
             }
 
             if (CheckCollisionCircleRec(pos, radius, Player2.getPlayer2())) {
                 if (velocityX > 0) {
-                    velocityX *= -1.1f;
+                    velocityX *= -1.1f; // Bounce back with increased speed
                     velocityY = (pos.y() - Player2.pos.y()) / (Player2.size.y() / 2) * -velocityX;
+                    velocityX -= friction * velocityX; // Apply friction
                 }
                 PlaySound(MusicPlayer.hitPoint);
             }
+
+            if(IsKeyPressed(KEY_T)) airResistance += 0.10f;
+            else if (IsKeyPressed(KEY_Y)) airResistance -= 0.10f;
+
+            if(IsKeyPressed(KEY_G)) magnus += 0.001f;
+            else if (IsKeyPressed(KEY_H)) magnus -= 0.001f;
+        }
+
+        public static float speed() {
+            return speed * 3.6f;
         }
     }
 
