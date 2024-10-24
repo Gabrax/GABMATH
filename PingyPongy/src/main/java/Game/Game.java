@@ -144,12 +144,17 @@ public class Game {
         public static float velocityX = 300.0f;
         public static float velocityY = 300.0f;
         static float rotation = 0.0f;
-        static float gravity = 20.0f;
-        static float friction = 0.5f;
+        static float friction = 0.1f;
         public static float airResistance = 0.00000001f;
         public static float magnus = 0.001f;
         static boolean hasCollided = false;
         static float speed = (float) Math.sqrt((velocityX * velocityX) + (velocityY * velocityY));
+
+        public static float gravity = 500.0f;
+        public static float bounceDampening = 0.7f;
+        static boolean isGravityEnabled = false;
+        static boolean isOnGround = false;
+        static float timeOnGround = 0.0f;
 
         public static void draw() {
             DrawTexturePro(Resources.ballTex,
@@ -158,28 +163,42 @@ public class Game {
                     new Jaylib.Vector2(radius, radius), rotation, RAYWHITE);
         }
 
-        public static boolean checkCollision(Jaylib.Vector2 circle, float radius, Jaylib.Rectangle rec) {
-            // Find the closest point to the circle within the rectangle
-            float closestX = Math.max(rec.x(), Math.min(circle.x(), rec.x() + rec.x()));
-            float closestY = Math.max(rec.y(), Math.min(circle.y(), rec.y() + rec.y()));
+        static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec)
+        {
+            boolean collision = false;
 
-            // Calculate the distance between the circle's center and the closest point
-            float distanceX = circle.x() - closestX;
-            float distanceY = circle.y() - closestY;
+            float recCenterX = rec.x() + rec.width()/2.0f;
+            float recCenterY = rec.y() + rec.height()/2.0f;
 
-            // If the distance is less than the circle's radius, there is a collision
-            float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-            return distanceSquared <= (radius * radius);
+            float dx = Math.abs(center.x() - recCenterX);
+            float dy = Math.abs(center.y() - recCenterY);
+
+            if (dx > (rec.width()/2.0f + radius)) { return false; }
+            if (dy > (rec.height()/2.0f + radius)) { return false; }
+
+            if (dx <= (rec.width()/2.0f)) { return true; }
+            if (dy <= (rec.height()/2.0f)) { return true; }
+
+            float cornerDistanceSq = (dx - rec.width()/2.0f)*(dx - rec.width()/2.0f) +
+                    (dy - rec.height()/2.0f)*(dy - rec.height()/2.0f);
+
+            collision = (cornerDistanceSq <= (radius*radius));
+
+            return collision;
         }
 
         public static void letBounce() {
+
+            if (isGravityEnabled) {
+                velocityY += gravity * GetFrameTime();
+            }
+
             pos.x(pos.x() + velocityX * GetFrameTime());
             pos.y(pos.y() + velocityY * GetFrameTime());
 
-            // Calculate speed and update rotation
+            // Update rotation based on friction
             if (hasCollided) {
                 rotation += (speed * friction) * GetFrameTime();
-
                 if (rotation >= 360.0f) rotation -= 360.0f;
             }
 
@@ -195,32 +214,54 @@ public class Game {
             velocityX += magnusForceX * GetFrameTime();
             velocityY += magnusForceY * GetFrameTime();
 
+            // Collision with window boundaries
             if (pos.y() < 0) {
                 pos.y(0);
                 velocityY *= -1.0f;
                 PlaySound(MusicPlayer.hitPoint);
             }
 
-            if (pos.y() > GetScreenHeight()) {
-                pos.y(GetScreenHeight());
-                velocityY *= -1.0f;
-                PlaySound(MusicPlayer.hitPoint);
-            }
+            if (pos.y() + radius >= GetScreenHeight()) {
+                pos.y(GetScreenHeight() - radius); // Ensure ball stays at ground level
 
-            if (CheckCollisionCircleRec(pos, radius, Player1.getPlayer1())) {
-                if (velocityX < 0) {
-                    velocityX *= -1.1f; // Bounce back with increased speed
-                    velocityY = (pos.y() - Player1.pos.y()) / (Player1.size.y() / 2) * velocityX;
-                    applyFriction();
+                if (Math.abs(velocityY) > 1.0f) { // Ensure sufficient velocity for bounce
+                    velocityY *= -bounceDampening; // Reverse velocity and apply dampening
+                    // Gradually reduce horizontal speed due to friction
+                    velocityX *= 0.9f;
+                } else {
+                    velocityY = 0.0f; // Stop small bounces that may cause sticking
                 }
                 PlaySound(MusicPlayer.hitPoint);
             }
 
-            if (CheckCollisionCircleRec(pos, radius, Player2.getPlayer2())) {
+            // Collision with Player1
+            if (CheckCollision(pos, radius, Player1.getPlayer1())) {
+                if (velocityX < 0) {
+                    velocityX *= -1.1f; // Bounce back with increased speed
+                    velocityY = (pos.y() - Player1.pos.y()) / (Player1.size.y() / 2) * velocityX;
+
+                    // Apply friction to reduce velocity slightly upon collision
+                    velocityX *= (1.0f - friction);
+                    velocityY *= (1.0f - friction);
+
+                    // Mark that collision has occurred
+                    hasCollided = true;
+                }
+                PlaySound(MusicPlayer.hitPoint);
+            }
+
+            // Collision with Player2
+            if (CheckCollision(pos, radius, Player2.getPlayer2())) {
                 if (velocityX > 0) {
                     velocityX *= -1.1f; // Bounce back with increased speed
                     velocityY = (pos.y() - Player2.pos.y()) / (Player2.size.y() / 2) * -velocityX;
-                    applyFriction();
+
+                    // Apply friction to reduce velocity slightly upon collision
+                    velocityX *= (1.0f - friction);
+                    velocityY *= (1.0f - friction);
+
+                    // Mark that collision has occurred
+                    hasCollided = true;
                 }
                 PlaySound(MusicPlayer.hitPoint);
             }
@@ -230,13 +271,8 @@ public class Game {
 
             if(IsKeyPressed(KEY_G)) magnus += 0.001f;
             else if (IsKeyPressed(KEY_H)) magnus -= 0.001f;
-        }
 
-        private static void applyFriction() {
-            float frameTime = GetFrameTime();
-            velocityX -= velocityX * friction * frameTime;
-            velocityY -= velocityY * friction * frameTime;
-            hasCollided = true;
+            if(IsKeyPressed(KEY_E)) isGravityEnabled = !isGravityEnabled;
         }
 
         public static float speed() {
@@ -305,6 +341,7 @@ public class Game {
         Ball.velocityX = 300.0f;
         Ball.velocityY = 300.0f;
         Ball.rotation = 0.0f;
+        Ball.isGravityEnabled = false;
     }
 
 
