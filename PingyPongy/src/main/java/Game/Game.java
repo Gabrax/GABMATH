@@ -144,10 +144,11 @@ public class Game {
         public static float velocityX = 300.0f;
         public static float velocityY = 300.0f;
         static float rotation = 0.0f;
-        static float gravity = 9.8f;
-        static float friction = 0.05f;
-        public static float airResistance = 0.01f;
+        static float gravity = 20.0f;
+        static float friction = 0.5f;
+        public static float airResistance = 0.00000001f;
         public static float magnus = 0.001f;
+        static boolean hasCollided = false;
         static float speed = (float) Math.sqrt((velocityX * velocityX) + (velocityY * velocityY));
 
         public static void draw() {
@@ -157,21 +158,30 @@ public class Game {
                     new Jaylib.Vector2(radius, radius), rotation, RAYWHITE);
         }
 
+        public static boolean checkCollision(Jaylib.Vector2 circle, float radius, Jaylib.Rectangle rec) {
+            // Find the closest point to the circle within the rectangle
+            float closestX = Math.max(rec.x(), Math.min(circle.x(), rec.x() + rec.x()));
+            float closestY = Math.max(rec.y(), Math.min(circle.y(), rec.y() + rec.y()));
+
+            // Calculate the distance between the circle's center and the closest point
+            float distanceX = circle.x() - closestX;
+            float distanceY = circle.y() - closestY;
+
+            // If the distance is less than the circle's radius, there is a collision
+            float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+            return distanceSquared <= (radius * radius);
+        }
+
         public static void letBounce() {
-            // Update position based on velocity
             pos.x(pos.x() + velocityX * GetFrameTime());
             pos.y(pos.y() + velocityY * GetFrameTime());
 
             // Calculate speed and update rotation
-            rotation += speed * GetFrameTime();
+            if (hasCollided) {
+                rotation += (speed * friction) * GetFrameTime();
 
-            // Ensure rotation stays within bounds
-            if (rotation >= 360.0f) {
-                rotation -= 360.0f;
+                if (rotation >= 360.0f) rotation -= 360.0f;
             }
-
-            // Apply gravity
-            velocityY += gravity * GetFrameTime();
 
             // Apply air resistance
             velocityX -= airResistance * velocityX * GetFrameTime();
@@ -201,7 +211,7 @@ public class Game {
                 if (velocityX < 0) {
                     velocityX *= -1.1f; // Bounce back with increased speed
                     velocityY = (pos.y() - Player1.pos.y()) / (Player1.size.y() / 2) * velocityX;
-                    velocityX -= friction * velocityX; // Apply friction
+                    applyFriction();
                 }
                 PlaySound(MusicPlayer.hitPoint);
             }
@@ -210,7 +220,7 @@ public class Game {
                 if (velocityX > 0) {
                     velocityX *= -1.1f; // Bounce back with increased speed
                     velocityY = (pos.y() - Player2.pos.y()) / (Player2.size.y() / 2) * -velocityX;
-                    velocityX -= friction * velocityX; // Apply friction
+                    applyFriction();
                 }
                 PlaySound(MusicPlayer.hitPoint);
             }
@@ -220,6 +230,13 @@ public class Game {
 
             if(IsKeyPressed(KEY_G)) magnus += 0.001f;
             else if (IsKeyPressed(KEY_H)) magnus -= 0.001f;
+        }
+
+        private static void applyFriction() {
+            float frameTime = GetFrameTime();
+            velocityX -= velocityX * friction * frameTime;
+            velocityY -= velocityY * friction * frameTime;
+            hasCollided = true;
         }
 
         public static float speed() {
