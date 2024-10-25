@@ -15,7 +15,7 @@ public class Game {
         public static Texture ballTex;
 
         static void LoadResources() {
-            String path = new File("resources/ball.png").getAbsolutePath();
+            String path = new File("resources/debugball.png").getAbsolutePath();
             ball = LoadImage(path);
             ballTex = LoadTextureFromImage(ball);
             UnloadImage(ball);
@@ -152,8 +152,7 @@ public class Game {
 
         public static float gravity = 500.0f;
         public static float bounceDampening = 0.7f;
-        static boolean isGravityEnabled = false;
-        static boolean isOnGround = false;
+        public static boolean isGravityEnabled = false;
         static float timeOnGround = 0.0f;
 
         public static void draw() {
@@ -165,7 +164,7 @@ public class Game {
 
         static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec)
         {
-            boolean collision = false;
+            boolean collision;
 
             float recCenterX = rec.x() + rec.width()/2.0f;
             float recCenterY = rec.y() + rec.height()/2.0f;
@@ -234,6 +233,7 @@ public class Game {
                 PlaySound(MusicPlayer.hitPoint);
             }
 
+            System.out.println(timeOnGround);
             // Collision with Player1
             if (CheckCollision(pos, radius, Player1.getPlayer1())) {
                 if (velocityX < 0) {
@@ -277,6 +277,16 @@ public class Game {
 
         public static float speed() {
             return speed * 3.6f;
+        }
+    }
+
+    public static class Sun{
+        public static void draw(){
+            DrawCircle(Window.Width/2,Window.Height/2,30,GOLD);
+        }
+
+        public static void GravityPull(){
+
         }
     }
 
@@ -345,11 +355,25 @@ public class Game {
     }
 
 
-    public static String DEBUG(String str, float arg1, float arg2){
+    public static String DEBUG(String str, Object... args) {
+        // Create a string builder to accumulate formatted values
+        StringBuilder formattedArgs = new StringBuilder();
 
-        int re_arg1 = (int)arg1;
-        int re_arg2 = (int)arg2;
+        // Iterate through each argument and append to the string builder
+        for (Object arg : args) {
+            if (!formattedArgs.isEmpty()) {
+                formattedArgs.append(", "); // Add a separator for multiple arguments
+            }
 
-        return String.format("%s (%d, %d)",str,re_arg1,re_arg2);
+            // Format the argument based on its type (you can customize this if needed)
+            if (arg instanceof Float || arg instanceof Double) {
+                formattedArgs.append(String.format("%.2f", arg)); // Limit floats/doubles to 2 decimal places
+            } else {
+                formattedArgs.append(arg); // Default formatting for other types
+            }
+        }
+
+        // Return the formatted string with all arguments
+        return String.format("%s (%s)", str, formattedArgs);
     }
 }
