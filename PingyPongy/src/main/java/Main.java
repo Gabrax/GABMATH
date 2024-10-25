@@ -27,8 +27,8 @@ public class Main {
 
                     DrawRectangleRoundedLines(Player1.getPlayer1(),2.0f,4,2.0f,RED);
                     DrawRectangleRoundedLines(Player2.getPlayer2(),2.0f,4,2.0f,BLUE);
-                    Ball.draw();
                     Sun.draw();
+                    Ball.draw();
 
                 DrawText("SPACE to Pause/Unpause", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
                 DrawText(DEBUG("Ball velocity",Ball.speed()),0,0,20,LIGHTGRAY);
@@ -36,6 +36,7 @@ public class Main {
                 DrawText(DEBUG("Air", Ball.airResistance), 0, 30, 20, LIGHTGRAY);
                 DrawText(DEBUG("Magnus", Ball.magnus), 0, 50, 20, LIGHTGRAY);
                 DrawText(DEBUG("Gravity", Ball.isGravityEnabled), 0, 70, 20, LIGHTGRAY);
+                DrawText(DEBUG("SunPull", Ball.isSunEnabled), 0, 90, 20, LIGHTGRAY);
 
                 if (Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
             EndDrawing();

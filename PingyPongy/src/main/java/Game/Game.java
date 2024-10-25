@@ -154,6 +154,8 @@ public class Game {
         public static float bounceDampening = 0.7f;
         public static boolean isGravityEnabled = false;
         static float timeOnGround = 0.0f;
+        public static boolean isSunEnabled = false;
+        static boolean initialOrbitVelocitySet = false;
 
         public static void draw() {
             DrawTexturePro(Resources.ballTex,
@@ -162,8 +164,7 @@ public class Game {
                     new Jaylib.Vector2(radius, radius), rotation, RAYWHITE);
         }
 
-        static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec)
-        {
+        static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec) {
             boolean collision;
 
             float recCenterX = rec.x() + rec.width()/2.0f;
@@ -201,6 +202,15 @@ public class Game {
                 if (rotation >= 360.0f) rotation -= 360.0f;
             }
 
+            if (isSunEnabled) {
+                if (!initialOrbitVelocitySet) {
+                    // Set initial tangential velocity for orbiting effect
+                    velocityX = 200.0f; // Adjust as needed
+                    initialOrbitVelocitySet = true;
+                }
+                Sun.GravityPull();
+            }
+
             // Apply air resistance
             velocityX -= airResistance * velocityX * GetFrameTime();
             velocityY -= airResistance * velocityY * GetFrameTime();
@@ -233,7 +243,7 @@ public class Game {
                 PlaySound(MusicPlayer.hitPoint);
             }
 
-            System.out.println(timeOnGround);
+            //System.out.println(timeOnGround);
             // Collision with Player1
             if (CheckCollision(pos, radius, Player1.getPlayer1())) {
                 if (velocityX < 0) {
@@ -272,7 +282,8 @@ public class Game {
             if(IsKeyPressed(KEY_G)) magnus += 0.001f;
             else if (IsKeyPressed(KEY_H)) magnus -= 0.001f;
 
-            if(IsKeyPressed(KEY_E)) isGravityEnabled = !isGravityEnabled;
+            if(IsKeyPressed(KEY_X)) isGravityEnabled = !isGravityEnabled;
+            if(IsKeyPressed(KEY_Z)) isSunEnabled = !isSunEnabled;
         }
 
         public static float speed() {
@@ -280,13 +291,52 @@ public class Game {
         }
     }
 
-    public static class Sun{
-        public static void draw(){
-            DrawCircle(Window.Width/2,Window.Height/2,30,GOLD);
+    public static class Sun {
+        public static final Jaylib.Vector2 sunPos = new Jaylib.Vector2(Window.Width / 2.0f, Window.Height / 2.0f);
+        private static final float gravitationalConstant = 200000000.0f;
+
+        public static void draw() {
+            DrawCircle((int) sunPos.x(), (int) sunPos.y(), 30, GOLD);
         }
 
-        public static void GravityPull(){
+        public static void GravityPull() {
+            // Calculate the direction vector from Ball to Sun
+            float dx = sunPos.x() - Ball.pos.x();
+            float dy = sunPos.y() - Ball.pos.y();
 
+            // Calculate the distance between Ball and Sun
+            float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+            // Prevent division by zero if the Ball gets too close to the Sun
+            if (distance < 1.0f) distance = 1.0f;
+
+            // Normalize the direction vector to point towards the Sun
+            float directionX = dx / distance;
+            float directionY = dy / distance;
+
+            // Calculate the gravitational force using the inverse square law
+            // Increase the gravitational constant for stronger pull
+            float force = gravitationalConstant / (distance * distance);
+
+            // Calculate the acceleration in the direction of the Sun
+            float accelerationX = force * directionX;
+            float accelerationY = force * directionY;
+
+            // Apply the calculated acceleration to the Ball's velocity
+            Ball.velocityX += accelerationX * GetFrameTime();
+            Ball.velocityY += accelerationY * GetFrameTime();
+
+            // Limit the maximum speed to prevent it from instantly zooming towards the sun
+            float maxSpeed = 400.0f; // You can adjust this value
+            float currentSpeed = (float) Math.sqrt(Ball.velocityX * Ball.velocityX + Ball.velocityY * Ball.velocityY);
+            if (currentSpeed > maxSpeed) {
+                Ball.velocityX *= maxSpeed / currentSpeed;
+                Ball.velocityY *= maxSpeed / currentSpeed;
+            }
+
+            // Update the Ball's position based on its velocity
+            Ball.pos.x(Ball.pos.x() + Ball.velocityX * GetFrameTime());
+            Ball.pos.y(Ball.pos.y() + Ball.velocityY * GetFrameTime());
         }
     }
 
@@ -352,6 +402,7 @@ public class Game {
         Ball.velocityY = 300.0f;
         Ball.rotation = 0.0f;
         Ball.isGravityEnabled = false;
+        Ball.isSunEnabled = false;
     }
 
 
