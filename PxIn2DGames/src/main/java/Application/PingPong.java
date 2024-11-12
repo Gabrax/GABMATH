@@ -1,79 +1,23 @@
-package Game;
+package Application;
 
 import com.raylib.Jaylib;
-import org.bytedeco.javacpp.FloatPointer;
 
 import java.io.File;
 
 import static com.raylib.Raylib.*;
 import static com.raylib.Jaylib.*;
 
-public class Game {
-    public static class Resources {
-
-        public static Image ball;
-        public static Texture ballTex;
-
-        static void LoadResources() {
-            String path = new File("resources/debugball.png").getAbsolutePath();
-            ball = LoadImage(path);
-            ballTex = LoadTextureFromImage(ball);
-            UnloadImage(ball);
-        }
-    }
-
-    public static class MusicPlayer {
-
-        static Music music;
-        static Sound hitPoint;
-
-        public static void Init() {
-            InitAudioDevice();
-            music = LoadMusicStream("resources/music.mp3");
-            PlayMusicStream(music);
-            SetMusicVolume(music, 0.10f);
-            hitPoint = LoadSound("resources/hit.wav");
-        }
-
-        public static void Update() {
-            UpdateMusicStream(music);
-        }
-    }
-
-    public static class Window {
-
-        static int Height = 600;
-        static int Width = 1000;
-        public static boolean pause = false;
-        public static boolean isResized = false;
-
-        public static void init() {
-            SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
-            InitWindow(Width, Height, "Pingy Pongy");
-            Resources.LoadResources();
-            SetTargetFPS(60);
-            DisableCursor();
-        }
-    }
+public class PingPong {
 
     public static class Player1 {
 
-        static Jaylib.Vector2 pos = new Jaylib.Vector2(50.0f, Window.Height - 250.0f);
+        static Jaylib.Vector2 pos = new Jaylib.Vector2(50.0f, AppUtils.Window.getHeight() - 250.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(), pos.y());
-        static Jaylib.Vector2 res_Pos = new Jaylib.Vector2((float) Window.Width - 750.0f, (float) Window.Height + 10.0f);
         static Jaylib.Vector2 size = new Jaylib.Vector2(20.0f, 200.0f);
         static float velocity = 500;
 
         public static Jaylib.Rectangle getPlayer1() {
             return new Jaylib.Rectangle(pos.x() - size.x() / 2, pos.y() - size.y() / 2, 10, 100);
-        }
-
-        public static void updatePosition() {
-            if (Window.isResized) {
-                pos = new Jaylib.Vector2(res_Pos.x(), res_Pos.y());
-            } else {
-                pos = new Jaylib.Vector2(initPos.x(), initPos.y());
-            }
         }
 
         public static void movePlayer() {
@@ -90,9 +34,8 @@ public class Game {
 
     public static class Player2 {
 
-        static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width - 45.0f, Window.Height - 250.0f);
+        static Jaylib.Vector2 pos = new Jaylib.Vector2(AppUtils.Window.getWidth() - 45.0f, AppUtils.Window.getHeight() - 250.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(),pos.y());
-        static Jaylib.Vector2 res_Pos = new Jaylib.Vector2((float) Window.Width + 700.0f, (float) Window.Height + 10.0f);
         static Jaylib.Vector2 size = new Jaylib.Vector2(20.0f, 200.0f);
         static boolean isMov = true;
         static float velocity = 500;
@@ -101,23 +44,15 @@ public class Game {
             return new Jaylib.Rectangle(pos.x() - size.x()/2, pos.y() - size.y()/2, 10, 100);
         }
 
-        public static void updatePosition() {
-            if (Window.isResized) {
-                pos = new Jaylib.Vector2(res_Pos.x(), res_Pos.y());
-            } else {
-                pos = new Jaylib.Vector2(initPos.x(), initPos.y());
-            }
-        }
-
         public static void movePlayer() {
 
             if (IsKeyDown(KEY_UP)) {
                 pos.y(pos.y() - velocity * GetFrameTime());
-                velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 900 : 500;
+                velocity = IsKeyDown(KEY_RIGHT_SHIFT) ? 900 : 500;
             }
             if (IsKeyDown(KEY_DOWN)) {
                 pos.y(pos.y() + velocity * GetFrameTime());
-                velocity = IsKeyDown(KEY_RIGHT_CONTROL) ? 900 : 500;
+                velocity = IsKeyDown(KEY_RIGHT_SHIFT) ? 900 : 500;
             }
         }
 
@@ -138,7 +73,7 @@ public class Game {
     }
 
     public static class Ball {
-        public static Jaylib.Vector2 pos = new Jaylib.Vector2(Window.Width / 2.0f, Window.Height / 2.0f);
+        public static Jaylib.Vector2 pos = new Jaylib.Vector2(AppUtils.Window.getWidth() / 2.0f, AppUtils.Window.getHeight() / 2.0f);
         static Jaylib.Vector2 initPos = new Jaylib.Vector2(pos.x(), pos.y());
         public static float radius = 20.0f;
         public static float velocityX = 300.0f;
@@ -158,8 +93,9 @@ public class Game {
         static boolean initialOrbitVelocitySet = false;
 
         public static void draw() {
-            DrawTexturePro(Resources.ballTex,
-                    new Jaylib.Rectangle(0, 0, Resources.ballTex.width(), Resources.ballTex.height()),
+            Texture balltexture = AppUtils.Resources.getResource("ballTex");
+            DrawTexturePro(balltexture,
+                    new Jaylib.Rectangle(0, 0, balltexture.width(), balltexture.height()),
                     new Jaylib.Rectangle(pos.x(), pos.y(), radius * 2, radius * 2),
                     new Jaylib.Vector2(radius, radius), rotation, RAYWHITE);
         }
@@ -205,7 +141,7 @@ public class Game {
             if (isSunEnabled) {
                 if (!initialOrbitVelocitySet) {
                     // Set initial tangential velocity for orbiting effect
-                    velocityX = 200.0f; // Adjust as needed
+                    velocityX = 200.0f;
                     initialOrbitVelocitySet = true;
                 }
                 Sun.GravityPull();
@@ -227,7 +163,7 @@ public class Game {
             if (pos.y() < 0) {
                 pos.y(0);
                 velocityY *= -1.0f;
-                PlaySound(MusicPlayer.hitPoint);
+                PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
 
             if (pos.y() + radius >= GetScreenHeight()) {
@@ -240,7 +176,7 @@ public class Game {
                 } else {
                     velocityY = 0.0f; // Stop small bounces that may cause sticking
                 }
-                PlaySound(MusicPlayer.hitPoint);
+                PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
 
             //System.out.println(timeOnGround);
@@ -254,10 +190,9 @@ public class Game {
                     velocityX *= (1.0f - friction);
                     velocityY *= (1.0f - friction);
 
-                    // Mark that collision has occurred
                     hasCollided = true;
                 }
-                PlaySound(MusicPlayer.hitPoint);
+                PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
 
             // Collision with Player2
@@ -270,10 +205,9 @@ public class Game {
                     velocityX *= (1.0f - friction);
                     velocityY *= (1.0f - friction);
 
-                    // Mark that collision has occurred
                     hasCollided = true;
                 }
-                PlaySound(MusicPlayer.hitPoint);
+                PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
 
             if(IsKeyPressed(KEY_T)) airResistance += 0.10f;
@@ -292,17 +226,19 @@ public class Game {
     }
 
     public static class Sun {
-        public static final Jaylib.Vector2 sunPos = new Jaylib.Vector2(Window.Width / 2.0f, Window.Height / 2.0f);
+        public static final Jaylib.Vector2 sunPos = new Jaylib.Vector2(AppUtils.Window.getWidth() / 2.0f, AppUtils.Window.getHeight() / 2.0f);
         private static final float gravitationalConstant = 200000000.0f;
+        private static final float orbitRadius = 60.0f;
 
         public static void draw() {
+            DrawCircle((int) sunPos.x(), (int) sunPos.y(), (int) orbitRadius, LIGHTGRAY);
             DrawCircle((int) sunPos.x(), (int) sunPos.y(), 30, GOLD);
         }
 
         public static void GravityPull() {
-            // Calculate the direction vector from Ball to Sun
-            float dx = sunPos.x() - Ball.pos.x();
-            float dy = sunPos.y() - Ball.pos.y();
+            // Calculate the direction vector from the Sun to the Ball
+            float dx = Ball.pos.x() - sunPos.x();
+            float dy = Ball.pos.y() - sunPos.y();
 
             // Calculate the distance between Ball and Sun
             float distance = (float) Math.sqrt(dx * dx + dy * dy);
@@ -310,24 +246,36 @@ public class Game {
             // Prevent division by zero if the Ball gets too close to the Sun
             if (distance < 1.0f) distance = 1.0f;
 
-            // Normalize the direction vector to point towards the Sun
-            float directionX = dx / distance;
-            float directionY = dy / distance;
-
             // Calculate the gravitational force using the inverse square law
-            // Increase the gravitational constant for stronger pull
             float force = gravitationalConstant / (distance * distance);
 
-            // Calculate the acceleration in the direction of the Sun
-            float accelerationX = force * directionX;
-            float accelerationY = force * directionY;
+            // Calculate the direction vector towards the Sun (normalized)
+            float directionX = -dx / distance; // Pointing towards the Sun
+            float directionY = -dy / distance; // Pointing towards the Sun
 
-            // Apply the calculated acceleration to the Ball's velocity
+            // Calculate the gravitational acceleration towards the Sun
+            float accelerationX = force * directionX; // Pulling towards the Sun
+            float accelerationY = force * directionY; // Pulling towards the Sun
+
+            // Apply the gravitational acceleration to the Ball's velocity
             Ball.velocityX += accelerationX * GetFrameTime();
             Ball.velocityY += accelerationY * GetFrameTime();
 
-            // Limit the maximum speed to prevent it from instantly zooming towards the sun
-            float maxSpeed = 400.0f; // You can adjust this value
+            // Check if the Ball is outside the desired orbit radius
+            if (distance > orbitRadius) {
+                // Ball is too far; maintain orbit by adjusting velocity inward
+                float correctionFactor = (distance - orbitRadius) * 0.05f;
+                Ball.velocityX -= directionX * correctionFactor;
+                Ball.velocityY -= directionY * correctionFactor;
+            } else if (distance < orbitRadius) {
+                // Ball is too close; apply a counteracting force outward
+                float correctionFactor = (orbitRadius - distance) * 0.05f;
+                Ball.velocityX += directionX * correctionFactor;
+                Ball.velocityY += directionY * correctionFactor;
+            }
+
+            // Limit the maximum speed to prevent the Ball from zooming away
+            float maxSpeed = 300.0f;
             float currentSpeed = (float) Math.sqrt(Ball.velocityX * Ball.velocityX + Ball.velocityY * Ball.velocityY);
             if (currentSpeed > maxSpeed) {
                 Ball.velocityX *= maxSpeed / currentSpeed;
@@ -368,35 +316,12 @@ public class Game {
                 p2Wins = false;
             }
         }
-
-        public static void updatePosition(){
-            if(Window.isResized){
-                x = 900;
-            }else x = 450;
-        }
-    }
-
-    public static void Resize() {
-
-        if (IsKeyPressed(KEY_F)) {
-            ToggleBorderlessWindowed();
-            Window.isResized = !Window.isResized;
-            Player1.updatePosition();
-            Player2.updatePosition();
-            ScoreBoard.updatePosition();
-        }
     }
 
     public static void Reset() {
 
-        if(Window.isResized){
-            Player1.pos = new Jaylib.Vector2(Player1.res_Pos.x(),Player1.res_Pos.y());
-            Player2.pos = new Jaylib.Vector2(Player2.res_Pos.x(),Player2.res_Pos.y());
-        }else{
-            Player1.pos = new Jaylib.Vector2(Player1.initPos.x(),Player1.initPos.y());
-            Player2.pos = new Jaylib.Vector2(Player2.initPos.x(),Player2.initPos.y());
-        }
-
+        Player1.pos = new Jaylib.Vector2(Player1.initPos.x(),Player1.initPos.y());
+        Player2.pos = new Jaylib.Vector2(Player2.initPos.x(),Player2.initPos.y());
         Ball.pos = new Jaylib.Vector2(Ball.initPos.x(),Ball.initPos.y());
         Ball.velocityX = 300.0f;
         Ball.velocityY = 300.0f;
@@ -407,24 +332,49 @@ public class Game {
 
 
     public static String DEBUG(String str, Object... args) {
-        // Create a string builder to accumulate formatted values
         StringBuilder formattedArgs = new StringBuilder();
 
-        // Iterate through each argument and append to the string builder
         for (Object arg : args) {
             if (!formattedArgs.isEmpty()) {
-                formattedArgs.append(", "); // Add a separator for multiple arguments
+                formattedArgs.append(", ");
             }
 
-            // Format the argument based on its type (you can customize this if needed)
             if (arg instanceof Float || arg instanceof Double) {
-                formattedArgs.append(String.format("%.2f", arg)); // Limit floats/doubles to 2 decimal places
+                formattedArgs.append(String.format("%.2f", arg));
             } else {
-                formattedArgs.append(arg); // Default formatting for other types
+                formattedArgs.append(arg);
             }
         }
-
-        // Return the formatted string with all arguments
         return String.format("%s (%s)", str, formattedArgs);
+    }
+
+    public static void RenderPingPong(){
+
+            if(IsKeyPressed(KEY_SPACE)) AppUtils.Window.pause = !AppUtils.Window.pause;
+            if(!AppUtils.Window.pause){
+
+                Ball.letBounce();
+                Player1.movePlayer();
+                Player2.movePlayer();
+            }
+            if(IsKeyPressed(KEY_R)) Reset();
+            ScoreBoard.UpdateBoard();
+
+            ClearBackground(BLACK);
+
+            DrawRectangleRoundedLines(Player1.getPlayer1(),2.0f,4,2.0f,RED);
+            DrawRectangleRoundedLines(Player2.getPlayer2(),2.0f,4,2.0f,BLUE);
+            Sun.draw();
+            Ball.draw();
+
+            DrawText("SPACE to Pause/Unpause", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
+            DrawText(DEBUG("Ball velocity",Ball.speed()),0,0,20,LIGHTGRAY);
+            DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), ScoreBoard.x, ScoreBoard.y, 40, LIGHTGRAY);
+            DrawText(DEBUG("Air", Ball.airResistance), 0, 30, 20, LIGHTGRAY);
+            DrawText(DEBUG("Magnus", Ball.magnus), 0, 50, 20, LIGHTGRAY);
+            DrawText(DEBUG("Gravity", Ball.isGravityEnabled), 0, 70, 20, LIGHTGRAY);
+            DrawText(DEBUG("SunPull", Ball.isSunEnabled), 0, 90, 20, LIGHTGRAY);
+
+            if (AppUtils.Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
     }
 }
