@@ -2,6 +2,7 @@ package Application;
 
 import com.raylib.Jaylib;
 
+import static Application.Game1.renderGame1;
 import static Application.PingPong.RenderPingPong;
 import static com.raylib.Jaylib.*;
 
@@ -19,13 +20,12 @@ public class App {
     // Menu selection index (0: PING_PONG_GAME, 1: GAME1, 2: GAME2, 3: GAME3)
     private static int menuSelection = 0;
     private static final int menuItemsCount = 4;
-    private static Texture selectionCubeTexture;
 
     public static void Run(){
         AppUtils.Window.init();
 
         // Load the selection cube texture (adjust path as needed)
-        selectionCubeTexture = LoadTexture("resources/arrow.png");
+        Texture selectionCubeTexture = LoadTexture("resources/arrow.png");
 
         while (!WindowShouldClose()) {
 
@@ -72,8 +72,10 @@ public class App {
                     break;
 
                 case PING_PONG_GAME:
-                    System.out.println("Rendering ping pong...");
                     RenderPingPong();
+                    break;
+                case GAME1:
+                    renderGame1();
                     break;
 
                 default:
