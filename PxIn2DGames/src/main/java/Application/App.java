@@ -4,6 +4,7 @@ import com.raylib.Jaylib;
 
 import static Application.Game1.renderGame1;
 import static Application.Game2.renderGame2;
+import static Application.Game3.renderGame3;
 import static Application.PingPong.RenderPingPong;
 import static com.raylib.Jaylib.*;
 
@@ -80,6 +81,9 @@ public class App {
                     break;
                 case GAME2:
                     renderGame2();
+                    break;
+                case GAME3:
+                    renderGame3();
                     break;
                 default:
                     System.out.println("Unknown Scene");
