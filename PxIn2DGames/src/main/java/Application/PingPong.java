@@ -2,8 +2,6 @@ package Application;
 
 import com.raylib.Jaylib;
 
-import java.io.File;
-
 import static com.raylib.Raylib.*;
 import static com.raylib.Jaylib.*;
 
@@ -90,7 +88,6 @@ public class PingPong {
         public static boolean isGravityEnabled = false;
         static float timeOnGround = 0.0f;
         public static boolean isSunEnabled = false;
-        static boolean initialOrbitVelocitySet = false;
 
         public static void draw() {
             Texture balltexture = AppUtils.Resources.getResource("ballTex");
@@ -138,15 +135,6 @@ public class PingPong {
                 if (rotation >= 360.0f) rotation -= 360.0f;
             }
 
-            if (isSunEnabled) {
-                if (!initialOrbitVelocitySet) {
-                    // Set initial tangential velocity for orbiting effect
-                    velocityX = 200.0f;
-                    initialOrbitVelocitySet = true;
-                }
-                Sun.GravityPull();
-            }
-
             // Apply air resistance
             velocityX -= airResistance * velocityX * GetFrameTime();
             velocityY -= airResistance * velocityY * GetFrameTime();
@@ -163,23 +151,24 @@ public class PingPong {
             if (pos.y() < 0) {
                 pos.y(0);
                 velocityY *= -1.0f;
+                hasCollided = true;
                 PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
 
             if (pos.y() + radius >= GetScreenHeight()) {
-                pos.y(GetScreenHeight() - radius); // Ensure ball stays at ground level
+                    pos.y(GetScreenHeight() - radius); // Ensure ball stays at ground level
 
-                if (Math.abs(velocityY) > 1.0f) { // Ensure sufficient velocity for bounce
-                    velocityY *= -bounceDampening; // Reverse velocity and apply dampening
-                    // Gradually reduce horizontal speed due to friction
-                    velocityX *= 0.9f;
-                } else {
-                    velocityY = 0.0f; // Stop small bounces that may cause sticking
-                }
+                    if (Math.abs(velocityY) > 1.0f) { // Ensure sufficient velocity for bounce
+                        velocityY *= -bounceDampening; // Reverse velocity and apply dampening
+                        // Gradually reduce horizontal speed due to friction
+                        velocityX *= 0.9f;
+                    } else {
+                        velocityY = 0.0f; // Stop small bounces that may cause sticking
+                    }
+                hasCollided = true;
                 PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
 
-            //System.out.println(timeOnGround);
             // Collision with Player1
             if (CheckCollision(pos, radius, Player1.getPlayer1())) {
                 if (velocityX < 0) {
@@ -221,70 +210,8 @@ public class PingPong {
         }
 
         public static float speed() {
+            speed = (float) Math.sqrt((velocityX * velocityX) + (velocityY * velocityY));
             return speed * 3.6f;
-        }
-    }
-
-    public static class Sun {
-        public static final Jaylib.Vector2 sunPos = new Jaylib.Vector2(AppUtils.Window.getWidth() / 2.0f, AppUtils.Window.getHeight() / 2.0f);
-        private static final float gravitationalConstant = 200000000.0f;
-        private static final float orbitRadius = 60.0f;
-
-        public static void draw() {
-            DrawCircle((int) sunPos.x(), (int) sunPos.y(), (int) orbitRadius, LIGHTGRAY);
-            DrawCircle((int) sunPos.x(), (int) sunPos.y(), 30, GOLD);
-        }
-
-        public static void GravityPull() {
-            // Calculate the direction vector from the Sun to the Ball
-            float dx = Ball.pos.x() - sunPos.x();
-            float dy = Ball.pos.y() - sunPos.y();
-
-            // Calculate the distance between Ball and Sun
-            float distance = (float) Math.sqrt(dx * dx + dy * dy);
-
-            // Prevent division by zero if the Ball gets too close to the Sun
-            if (distance < 1.0f) distance = 1.0f;
-
-            // Calculate the gravitational force using the inverse square law
-            float force = gravitationalConstant / (distance * distance);
-
-            // Calculate the direction vector towards the Sun (normalized)
-            float directionX = -dx / distance; // Pointing towards the Sun
-            float directionY = -dy / distance; // Pointing towards the Sun
-
-            // Calculate the gravitational acceleration towards the Sun
-            float accelerationX = force * directionX; // Pulling towards the Sun
-            float accelerationY = force * directionY; // Pulling towards the Sun
-
-            // Apply the gravitational acceleration to the Ball's velocity
-            Ball.velocityX += accelerationX * GetFrameTime();
-            Ball.velocityY += accelerationY * GetFrameTime();
-
-            // Check if the Ball is outside the desired orbit radius
-            if (distance > orbitRadius) {
-                // Ball is too far; maintain orbit by adjusting velocity inward
-                float correctionFactor = (distance - orbitRadius) * 0.05f;
-                Ball.velocityX -= directionX * correctionFactor;
-                Ball.velocityY -= directionY * correctionFactor;
-            } else if (distance < orbitRadius) {
-                // Ball is too close; apply a counteracting force outward
-                float correctionFactor = (orbitRadius - distance) * 0.05f;
-                Ball.velocityX += directionX * correctionFactor;
-                Ball.velocityY += directionY * correctionFactor;
-            }
-
-            // Limit the maximum speed to prevent the Ball from zooming away
-            float maxSpeed = 300.0f;
-            float currentSpeed = (float) Math.sqrt(Ball.velocityX * Ball.velocityX + Ball.velocityY * Ball.velocityY);
-            if (currentSpeed > maxSpeed) {
-                Ball.velocityX *= maxSpeed / currentSpeed;
-                Ball.velocityY *= maxSpeed / currentSpeed;
-            }
-
-            // Update the Ball's position based on its velocity
-            Ball.pos.x(Ball.pos.x() + Ball.velocityX * GetFrameTime());
-            Ball.pos.y(Ball.pos.y() + Ball.velocityY * GetFrameTime());
         }
     }
 
@@ -364,16 +291,14 @@ public class PingPong {
 
             DrawRectangleRoundedLines(Player1.getPlayer1(),2.0f,4,2.0f,RED);
             DrawRectangleRoundedLines(Player2.getPlayer2(),2.0f,4,2.0f,BLUE);
-            Sun.draw();
             Ball.draw();
 
-            DrawText("SPACE to Pause/Unpause", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
             DrawText(DEBUG("Ball velocity",Ball.speed()),0,0,20,LIGHTGRAY);
             DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), ScoreBoard.x, ScoreBoard.y, 40, LIGHTGRAY);
             DrawText(DEBUG("Air", Ball.airResistance), 0, 30, 20, LIGHTGRAY);
             DrawText(DEBUG("Magnus", Ball.magnus), 0, 50, 20, LIGHTGRAY);
             DrawText(DEBUG("Gravity", Ball.isGravityEnabled), 0, 70, 20, LIGHTGRAY);
-            DrawText(DEBUG("SunPull", Ball.isSunEnabled), 0, 90, 20, LIGHTGRAY);
+            DrawText("SPACE to Pause/Unpause, CTRL to return, R to reset", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
 
             if (AppUtils.Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
     }

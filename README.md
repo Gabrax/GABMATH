@@ -1,8 +1,11 @@
- <p align="center">
-    <img src="https://github.com/user-attachments/assets/e64c5666-0795-4643-98d2-51c3608ed0ed" alt="Logo" width="200"/>
-</p>
+Physics demonstration in 2D games
 
-Classic ping pong game made for lecture assignment
+In MENU move around with arrow, press enter to choose
+
+In Games move around with arrows.
+In PingPong to move left player use W,S
+In PingPong to move right player use Up Arrow, Down Arrow
+Use SHIFT to move faster
 
 To run:
 

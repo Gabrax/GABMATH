@@ -50,7 +50,6 @@ public class App {
                 }
             }
 
-            // Return to menu with Control keys
             if (currentScene != Scene.MENU && (IsKeyPressed(KEY_LEFT_CONTROL) || IsKeyPressed(KEY_RIGHT_CONTROL))) {
                 currentScene = Scene.MENU;
             }
@@ -68,7 +67,6 @@ public class App {
 
                     DrawText("Press ESCAPE to Exit", 320, 350, 20, WHITE);
 
-                    // Draw a textured cube next to the selected menu item
                     float cubePosY = 145 + menuSelection * 50;
                     DrawTextureEx(selectionCubeTexture, new Jaylib.Vector2(300, cubePosY), 0.0f, 0.5f, WHITE);
                     break;
