@@ -90,11 +90,19 @@ public class PingPong {
         public static boolean isSunEnabled = false;
 
         public static void draw() {
-            Texture balltexture = AppUtils.Resources.getResource("ballTex");
-            DrawTexturePro(balltexture,
-                    new Jaylib.Rectangle(0, 0, balltexture.width(), balltexture.height()),
-                    new Jaylib.Rectangle(pos.x(), pos.y(), radius * 2, radius * 2),
-                    new Jaylib.Vector2(radius, radius), rotation, RAYWHITE);
+
+            DrawCircleV(pos, radius, RAYWHITE);
+
+            float angle = (float) (rotation * DEG2RAD);
+
+            Jaylib.Vector2 lineEnd = new Jaylib.Vector2(
+                    pos.x() + radius * (float) Math.cos(angle),
+                    pos.y() + radius * (float) Math.sin(angle)
+            );
+
+            float thickness = 3.0f;
+
+            DrawLineEx(pos, lineEnd, thickness, RED);
         }
 
         static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec) {

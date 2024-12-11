@@ -8,27 +8,6 @@ import static com.raylib.Raylib.*;
 import static com.raylib.Raylib.UpdateMusicStream;
 
 public class AppUtils {
-    public static class Resources {
-
-        private static Texture ballTex;
-
-        static void LoadResources() {
-            String path = new File("resources/debugball.png").getAbsolutePath();
-            Image ball = LoadImage(path);
-            ballTex = LoadTextureFromImage(ball);
-            UnloadImage(ball);
-        }
-
-        // Method to get a resource by name
-        public static Texture getResource(String name) {
-            switch (name.toLowerCase()) {
-                case "balltex":
-                    return ballTex;
-                default:
-                    throw new IllegalArgumentException("Resource not found: " + name);
-            }
-        }
-    }
 
     public static class MusicPlayer {
 
@@ -79,7 +58,6 @@ public class AppUtils {
         public static void init() {
             SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
             InitWindow(_width, _height, "PxInGames");
-            Resources.LoadResources();
             MusicPlayer.Init();
             //SetTargetFPS(60);
             DisableCursor();
