@@ -5,8 +5,8 @@ import static com.raylib.Jaylib.*;
 
 public class Game2 {
     static Jaylib.Vector2 pos1 = new Jaylib.Vector2(200, 300);
-    static Jaylib.Vector2 pos2 = new Jaylib.Vector2(700, 261);
-    static Jaylib.Vector2 velocity1 = new Jaylib.Vector2(10000, 0); // High speed
+    static Jaylib.Vector2 pos2 = new Jaylib.Vector2(700, 281);
+    static Jaylib.Vector2 velocity1 = new Jaylib.Vector2(500, 0); // High speed
     static Jaylib.Vector2 velocity2 = new Jaylib.Vector2(0, 0); // High speed
     static float radius = 20;
     static float mass1 = 1.0f;

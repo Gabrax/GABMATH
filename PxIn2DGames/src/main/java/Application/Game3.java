@@ -5,8 +5,8 @@ import static com.raylib.Jaylib.*;
 
 public class Game3 {
 
-    static final float G = 50.0f;
-    static final float dt = 1.0f; // Time step
+    static final float G = 10.0f;
+    static final float dt = (1.0f/60.0f) * 10.0f; // Time step
 
     static float mass1 = 10.0f;
     static float mass2 = 10.0f;
@@ -33,16 +33,9 @@ public class Game3 {
     static Jaylib.Vector2 vel2 = new Jaylib.Vector2(0, -orbitalVelocity); // Body2 moves downward
 
     public static void renderGame3() {
-        // Update positions and velocities using Runge-Kutta 4th
-        Jaylib.Vector2[] rk4_1 = rungeKutta4(pos1, vel1, mass1, pos2, mass2, dt);
-        Jaylib.Vector2[] rk4_2 = rungeKutta4(pos2, vel2, mass2, pos1, mass1, dt);
 
-        // Update the positions and velocities with RK4
-        pos1 = rk4_1[0];
-        vel1 = rk4_1[1];
-        pos2 = rk4_2[0];
-        vel2 = rk4_2[1];
-
+        //rungeKutta4Simultaneous();
+        UpdateEuler();
 
         ClearBackground(RAYWHITE);
         DrawCircleV(pos1, 10, BLUE);
@@ -66,6 +59,19 @@ public class Game3 {
             vel1 = new Jaylib.Vector2(0, orbitalVelocity);
             vel2 = new Jaylib.Vector2(0, -orbitalVelocity);
         }
+    }
+
+    public static void UpdateEuler() {
+        // Calculate the gravitational force between the two objects
+        Jaylib.Vector2 force12 = calculateGravitationalForce(pos1, pos2, mass1, mass2);
+
+        // Update velocities based on the gravitational force
+        vel1 = add(vel1, multiply(force12, (1.0f / mass1) * dt));  // Update velocity of object 1
+        vel2 = add(vel2, multiply(subtract(new Jaylib.Vector2(0, 0), force12), (1.0f / mass2) * dt)); // Update velocity of object 2
+
+        // Update positions based on the updated velocities
+        pos1 = add(pos1, multiply(vel1, dt));
+        pos2 = add(pos2, multiply(vel2, dt));
     }
 
     // Runge-Kutta 4th order method for position and velocity update
@@ -93,6 +99,68 @@ public class Game3 {
 
         return new Jaylib.Vector2[]{newPos, newVel};
     }
+
+    public static void rungeKutta4Simultaneous() {
+        // Calculate forces at the initial positions
+        Jaylib.Vector2 force12 = calculateGravitationalForce(pos1, pos2, mass1, mass2);
+        Jaylib.Vector2 force21 = calculateGravitationalForce(pos2, pos1, mass2, mass1);
+
+        // k1 - Initial velocity and position updates
+        Jaylib.Vector2 k1_vel1 = multiply(force12, dt / mass1);
+        Jaylib.Vector2 k1_vel2 = multiply(force21, dt / mass2);
+        Jaylib.Vector2 k1_pos1 = multiply(vel1, dt);
+        Jaylib.Vector2 k1_pos2 = multiply(vel2, dt);
+
+        // Midpoint for k2
+        Jaylib.Vector2 midPos1_k1 = add(pos1, multiply(k1_pos1, 0.5f));
+        Jaylib.Vector2 midPos2_k1 = add(pos2, multiply(k1_pos2, 0.5f));
+        Jaylib.Vector2 midVel1_k1 = add(vel1, multiply(k1_vel1, 0.5f));
+        Jaylib.Vector2 midVel2_k1 = add(vel2, multiply(k1_vel2, 0.5f));
+
+        // k2 - Forces and velocity/position updates at midpoint
+        Jaylib.Vector2 k2_force12 = calculateGravitationalForce(midPos1_k1, midPos2_k1, mass1, mass2);
+        Jaylib.Vector2 k2_force21 = calculateGravitationalForce(midPos2_k1, midPos1_k1, mass2, mass1);
+        Jaylib.Vector2 k2_vel1 = multiply(k2_force12, dt / mass1);
+        Jaylib.Vector2 k2_vel2 = multiply(k2_force21, dt / mass2);
+        Jaylib.Vector2 k2_pos1 = multiply(midVel1_k1, dt);
+        Jaylib.Vector2 k2_pos2 = multiply(midVel2_k1, dt);
+
+        // Midpoint for k3
+        Jaylib.Vector2 midPos1_k2 = add(pos1, multiply(k2_pos1, 0.5f));
+        Jaylib.Vector2 midPos2_k2 = add(pos2, multiply(k2_pos2, 0.5f));
+        Jaylib.Vector2 midVel1_k2 = add(vel1, multiply(k2_vel1, 0.5f));
+        Jaylib.Vector2 midVel2_k2 = add(vel2, multiply(k2_vel2, 0.5f));
+
+        // k3 - Forces and velocity/position updates at second midpoint
+        Jaylib.Vector2 k3_force12 = calculateGravitationalForce(midPos1_k2, midPos2_k2, mass1, mass2);
+        Jaylib.Vector2 k3_force21 = calculateGravitationalForce(midPos2_k2, midPos1_k2, mass2, mass1);
+        Jaylib.Vector2 k3_vel1 = multiply(k3_force12, dt / mass1);
+        Jaylib.Vector2 k3_vel2 = multiply(k3_force21, dt / mass2);
+        Jaylib.Vector2 k3_pos1 = multiply(midVel1_k2, dt);
+        Jaylib.Vector2 k3_pos2 = multiply(midVel2_k2, dt);
+
+        // End velocities and positions for k4
+        Jaylib.Vector2 endPos1_k3 = add(pos1, k3_pos1);
+        Jaylib.Vector2 endPos2_k3 = add(pos2, k3_pos2);
+        Jaylib.Vector2 endVel1_k3 = add(vel1, k3_vel1);
+        Jaylib.Vector2 endVel2_k3 = add(vel2, k3_vel2);
+
+        // k4 - Forces and velocity/position updates at the final step
+        Jaylib.Vector2 k4_force12 = calculateGravitationalForce(endPos1_k3, endPos2_k3, mass1, mass2);
+        Jaylib.Vector2 k4_force21 = calculateGravitationalForce(endPos2_k3, endPos1_k3, mass2, mass1);
+        Jaylib.Vector2 k4_vel1 = multiply(k4_force12, dt / mass1);
+        Jaylib.Vector2 k4_vel2 = multiply(k4_force21, dt / mass2);
+        Jaylib.Vector2 k4_pos1 = multiply(endVel1_k3, dt);
+        Jaylib.Vector2 k4_pos2 = multiply(endVel2_k3, dt);
+
+        // Update positions and velocities using weighted averages
+        pos1 = add(pos1, multiply(add(k1_pos1, add(multiply(k2_pos1, 2), add(multiply(k3_pos1, 2), k4_pos1))), 1.0f / 6.0f));
+        vel1 = add(vel1, multiply(add(k1_vel1, add(multiply(k2_vel1, 2), add(multiply(k3_vel1, 2), k4_vel1))), 1.0f / 6.0f));
+
+        pos2 = add(pos2, multiply(add(k1_pos2, add(multiply(k2_pos2, 2), add(multiply(k3_pos2, 2), k4_pos2))), 1.0f / 6.0f));
+        vel2 = add(vel2, multiply(add(k1_vel2, add(multiply(k2_vel2, 2), add(multiply(k3_vel2, 2), k4_vel2))), 1.0f / 6.0f));
+    }
+
 
     // Calculate the gravitational force between two bodies
     public static Jaylib.Vector2 calculateGravitationalForce(Jaylib.Vector2 pos1, Jaylib.Vector2 pos2, float m1, float m2) {
@@ -124,5 +192,9 @@ public class Game3 {
     public static Jaylib.Vector2 normalize(Jaylib.Vector2 v) {
         float length = (float) Math.sqrt(v.x() * v.x() + v.y() * v.y());
         return new Jaylib.Vector2(v.x() / length, v.y() / length);
+    }
+
+    public static Jaylib.Vector2 divide(Jaylib.Vector2 v, float scalar) {
+        return new Jaylib.Vector2(v.x() / scalar, v.y() / scalar);
     }
 }

@@ -89,7 +89,8 @@ public class PingPong {
         static float timeOnGround = 0.0f;
         public static boolean isSunEnabled = false;
 
-        public static void draw() {
+        public static void draw()
+        {
 
             DrawCircleV(pos, radius, RAYWHITE);
 
@@ -105,7 +106,8 @@ public class PingPong {
             DrawLineEx(pos, lineEnd, thickness, RED);
         }
 
-        static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec) {
+        static boolean CheckCollision(Jaylib.Vector2 center, float radius, Jaylib.Rectangle rec)
+        {
             boolean collision;
 
             float recCenterX = rec.x() + rec.width()/2.0f;
@@ -128,7 +130,8 @@ public class PingPong {
             return collision;
         }
 
-        public static void letBounce() {
+        public static void letBounce()
+        {
 
             if (isGravityEnabled) {
                 velocityY += gravity * GetFrameTime();
@@ -139,7 +142,7 @@ public class PingPong {
 
             // Update rotation based on friction
             if (hasCollided) {
-                rotation += (speed * friction) * GetFrameTime();
+                rotation += Math.signum(velocityX) * (speed * friction) * GetFrameTime();
                 if (rotation >= 360.0f) rotation -= 360.0f;
             }
 
@@ -164,15 +167,15 @@ public class PingPong {
             }
 
             if (pos.y() + radius >= GetScreenHeight()) {
-                    pos.y(GetScreenHeight() - radius); // Ensure ball stays at ground level
+                pos.y(GetScreenHeight() - radius); // Ensure ball stays at ground level
 
-                    if (Math.abs(velocityY) > 1.0f) { // Ensure sufficient velocity for bounce
-                        velocityY *= -bounceDampening; // Reverse velocity and apply dampening
-                        // Gradually reduce horizontal speed due to friction
-                        velocityX *= 0.9f;
-                    } else {
-                        velocityY = 0.0f; // Stop small bounces that may cause sticking
-                    }
+                if (Math.abs(velocityY) > 1.0f) { // Ensure sufficient velocity for bounce
+                    velocityY *= -bounceDampening; // Reverse velocity and apply dampening
+                    // Gradually reduce horizontal speed due to friction
+                    velocityX *= 0.9f;
+                } else {
+                    velocityY = 0.0f; // Stop small bounces that may cause sticking
+                }
                 hasCollided = true;
                 PlaySound(AppUtils.MusicPlayer.getSound("hitPoint"));
             }
@@ -214,7 +217,6 @@ public class PingPong {
             else if (IsKeyPressed(KEY_H)) magnus -= 0.001f;
 
             if(IsKeyPressed(KEY_X)) isGravityEnabled = !isGravityEnabled;
-            if(IsKeyPressed(KEY_Z)) isSunEnabled = !isSunEnabled;
         }
 
         public static float speed() {
@@ -285,29 +287,29 @@ public class PingPong {
 
     public static void RenderPingPong(){
 
-            if(IsKeyPressed(KEY_SPACE)) AppUtils.Window.pause = !AppUtils.Window.pause;
-            if(!AppUtils.Window.pause){
+        if(IsKeyPressed(KEY_SPACE)) AppUtils.Window.pause = !AppUtils.Window.pause;
+        if(!AppUtils.Window.pause){
 
-                Ball.letBounce();
-                Player1.movePlayer();
-                Player2.movePlayer();
-            }
-            if(IsKeyPressed(KEY_R)) Reset();
-            ScoreBoard.UpdateBoard();
+            Ball.letBounce();
+            Player1.movePlayer();
+            Player2.movePlayer();
+        }
+        if(IsKeyPressed(KEY_R)) Reset();
+        ScoreBoard.UpdateBoard();
 
-            ClearBackground(BLACK);
+        ClearBackground(BLACK);
 
-            DrawRectangleRoundedLines(Player1.getPlayer1(),2.0f,4,2.0f,RED);
-            DrawRectangleRoundedLines(Player2.getPlayer2(),2.0f,4,2.0f,BLUE);
-            Ball.draw();
+        DrawRectangleRoundedLines(Player1.getPlayer1(),2.0f,4,2.0f,RED);
+        DrawRectangleRoundedLines(Player2.getPlayer2(),2.0f,4,2.0f,BLUE);
+        Ball.draw();
 
-            DrawText(DEBUG("Ball velocity",Ball.speed()),0,0,20,LIGHTGRAY);
-            DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), ScoreBoard.x, ScoreBoard.y, 40, LIGHTGRAY);
-            DrawText(DEBUG("Air", Ball.airResistance), 0, 30, 20, LIGHTGRAY);
-            DrawText(DEBUG("Magnus", Ball.magnus), 0, 50, 20, LIGHTGRAY);
-            DrawText(DEBUG("Gravity", Ball.isGravityEnabled), 0, 70, 20, LIGHTGRAY);
-            DrawText("SPACE to Pause/Unpause, CTRL to return, R to reset", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
+        DrawText(DEBUG("Ball velocity",Ball.speed()),0,0,20,LIGHTGRAY);
+        DrawText(DEBUG("", ScoreBoard.p1, ScoreBoard.p2), ScoreBoard.x, ScoreBoard.y, 40, LIGHTGRAY);
+        DrawText(DEBUG("Air", Ball.airResistance), 0, 30, 20, LIGHTGRAY);
+        DrawText(DEBUG("Magnus", Ball.magnus), 0, 50, 20, LIGHTGRAY);
+        DrawText(DEBUG("Gravity", Ball.isGravityEnabled), 0, 70, 20, LIGHTGRAY);
+        DrawText("SPACE to Pause/Unpause, CTRL to return, R to reset", 10, GetScreenHeight() - 25, 20, LIGHTGRAY);
 
-            if (AppUtils.Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
+        if (AppUtils.Window.pause) DrawText("PAUSED", 350, 200, 30, GRAY);
     }
 }
