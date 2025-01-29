@@ -142,10 +142,8 @@ namespace ColoringRandomPolygon
 
       std::vector<Vector2> tracePath;
 
-
       float polygonArea = CalculatePolygonArea(polygon);
 
-      // Create a render texture to track colored pixels
       RenderTexture2D renderTexture = LoadRenderTexture(screenWidth, screenHeight);
       BeginTextureMode(renderTexture);
       ClearBackground(BLANK);
@@ -160,7 +158,6 @@ namespace ColoringRandomPolygon
           circle.position.x += circle.velocity.x;
           circle.position.y += circle.velocity.y;
 
-          // Pass tracePath to HandleCollision
           HandleCollision(circle, polygon, renderTexture, tracePath);
 
           // Draw the trace path directly into the render texture
@@ -185,7 +182,6 @@ namespace ColoringRandomPolygon
               tracePath.clear();
               polygonArea = CalculatePolygonArea(polygon);
 
-              // Clear the render texture
               BeginTextureMode(renderTexture);
               ClearBackground(BLANK);
               EndTextureMode();
@@ -209,8 +205,8 @@ namespace ColoringRandomPolygon
 
           // Display information
           DrawText(TextFormat("Time: %.2f seconds", timer), 10, 10, 20, WHITE);
-          DrawText(TextFormat("Colored Area: %.2f%%", coloredPercentage), 10, 40, 20, WHITE);
-          DrawText(TextFormat("Colored Area Pixels: %.2f", polygonArea), 10,60, 20, WHITE);
+          DrawText(TextFormat("Colored Pixels: %.2f%%", coloredPercentage), 10, 40, 20, WHITE);
+          DrawText(TextFormat("Polygon Pixels: %.2f", polygonArea), 10,60, 20, WHITE);
 
           if (allColored) {
               DrawText("90% of the polygon is colored!", screenWidth / 2 - 120, screenHeight / 2, 20, GREEN);
