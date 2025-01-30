@@ -106,6 +106,40 @@ float CalculatePolygonArea(const Polygon& polygon) {
     return fabs(area) / 2.0f; // Shoelace formula
 }
 
+bool IsPointInsidePolygon(Vector2 point, const std::vector<Vector2>& vertices) {
+    int count = vertices.size();
+    bool inside = false;
+    for (int i = 0, j = count - 1; i < count; j = i++) {
+        if (((vertices[i].y > point.y) != (vertices[j].y > point.y)) &&
+            (point.x < (vertices[j].x - vertices[i].x) * (point.y - vertices[i].y) / (vertices[j].y - vertices[i].y) + vertices[i].x)) {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+float CalculateColoredArea(const Polygon& polygon, RenderTexture2D& renderTexture) {
+    Image image = LoadImageFromTexture(renderTexture.texture);
+    Color* pixels = LoadImageColors(image);
+
+    int coloredPixels = 0;
+    for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+            int i = y * image.width + x;
+            if (pixels[i].r == YELLOW.r && pixels[i].g == YELLOW.g && pixels[i].b == YELLOW.b) {
+                if (IsPointInsidePolygon({(float)x, (float)y}, polygon.vertices)) {
+                    coloredPixels++;
+                }
+            }
+        }
+    }
+
+    float area = (float)coloredPixels;
+    UnloadImageColors(pixels);
+    UnloadImage(image);
+    return area;
+}
+
 float CalculateColoredArea(RenderTexture2D& renderTexture) {
     Image image = LoadImageFromTexture(renderTexture.texture);
     Color* pixels = LoadImageColors(image);
