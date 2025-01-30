@@ -239,8 +239,9 @@ namespace ColoringRandomPolygon
 
           // Display information
           DrawText(TextFormat("Time: %.2f seconds", timer), 10, 10, 20, WHITE);
-          DrawText(TextFormat("Colored Pixels: %.2f%%", coloredPercentage), 10, 40, 20, WHITE);
-          DrawText(TextFormat("Polygon Pixels: %.2f", polygonArea), 10,60, 20, WHITE);
+          DrawText(TextFormat("Colored Percentage: %.2f%%", coloredPercentage), 10, 40, 20, WHITE);
+          DrawText(TextFormat("Colored Pixels: %.2f", coloredArea), 10, 60, 20, WHITE);
+          DrawText(TextFormat("Polygon Pixels: %.2f", polygonArea), 10,80, 20, WHITE);
 
           if (allColored) {
               DrawText("90% of the polygon is colored!", screenWidth / 2 - 120, screenHeight / 2, 20, GREEN);
