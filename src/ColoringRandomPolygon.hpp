@@ -20,7 +20,7 @@ struct Polygon {
     float rotation; 
 };
 
-std::vector<float> GenerateEdgeWidths(int sides, float minWidth, float maxWidth) {
+inline static std::vector<float> GenerateEdgeWidths(int sides, float minWidth, float maxWidth) {
     if (minWidth > maxWidth) {
         throw std::invalid_argument("minWidth cannot be greater than maxWidth.");
     }
@@ -33,7 +33,7 @@ std::vector<float> GenerateEdgeWidths(int sides, float minWidth, float maxWidth)
     return edgeWidths;
 }
 
-Polygon GeneratePolygon(int sides, const std::vector<float>& edgeWidths, Vector2 center) {
+inline static Polygon GeneratePolygon(int sides, const std::vector<float>& edgeWidths, Vector2 center) {
     if (sides != edgeWidths.size()) {
         throw std::invalid_argument("Number of sides must match the number of edge widths.");
     }
@@ -55,7 +55,7 @@ Polygon GeneratePolygon(int sides, const std::vector<float>& edgeWidths, Vector2
     return polygon;
 }
 
-void RotatePolygon(Polygon& polygon, float angle) {
+inline static void RotatePolygon(Polygon& polygon, float angle) {
     Vector2 center = {0, 0};
     for (const auto& vertex : polygon.vertices) {
         center = Vector2Add(center, vertex);
@@ -71,7 +71,7 @@ void RotatePolygon(Polygon& polygon, float angle) {
     polygon.rotation += angle;
 }
 
-void HandleCollision(Circle& circle, Polygon& polygon, RenderTexture2D& renderTexture, std::vector<Vector2>& tracePath) {
+inline static void HandleCollision(Circle& circle, Polygon& polygon, RenderTexture2D& renderTexture, std::vector<Vector2>& tracePath) {
     for (size_t i = 0; i < polygon.vertices.size(); i++) {
         Vector2 start = polygon.vertices[i];
         Vector2 end = polygon.vertices[(i + 1) % polygon.vertices.size()];
@@ -93,7 +93,7 @@ void HandleCollision(Circle& circle, Polygon& polygon, RenderTexture2D& renderTe
     }
 }
 
-float CalculatePolygonArea(const Polygon& polygon) {
+inline static float CalculatePolygonArea(const Polygon& polygon) {
     float area = 0.0f;
     int n = polygon.vertices.size();
 
@@ -106,7 +106,7 @@ float CalculatePolygonArea(const Polygon& polygon) {
     return fabs(area) / 2.0f; // Shoelace formula
 }
 
-bool IsPointInsidePolygon(Vector2 point, const std::vector<Vector2>& vertices) {
+inline static bool IsPointInsidePolygon(Vector2 point, const std::vector<Vector2>& vertices) {
     int count = vertices.size();
     bool inside = false;
     for (int i = 0, j = count - 1; i < count; j = i++) {
@@ -118,7 +118,7 @@ bool IsPointInsidePolygon(Vector2 point, const std::vector<Vector2>& vertices) {
     return inside;
 }
 
-float CalculateColoredArea(const Polygon& polygon, RenderTexture2D& renderTexture) {
+inline static float CalculateColoredArea(const Polygon& polygon, RenderTexture2D& renderTexture) {
     Image image = LoadImageFromTexture(renderTexture.texture);
     Color* pixels = LoadImageColors(image);
 
@@ -140,7 +140,7 @@ float CalculateColoredArea(const Polygon& polygon, RenderTexture2D& renderTextur
     return area;
 }
 
-float CalculateColoredArea(RenderTexture2D& renderTexture) {
+inline static float CalculateColoredArea(RenderTexture2D& renderTexture) {
     Image image = LoadImageFromTexture(renderTexture.texture);
     Color* pixels = LoadImageColors(image);
 
@@ -194,7 +194,6 @@ struct CRP
 
       HandleCollision(circle, polygon, renderTexture, tracePath);
 
-      // Draw the trace path directly into the render texture
       BeginTextureMode(renderTexture);
       for (size_t j = 0; j < tracePath.size() - 1; j++) {
           DrawLineEx(tracePath[j], tracePath[j + 1], circle.radius * 2.0f, YELLOW);
@@ -222,27 +221,24 @@ struct CRP
       }
 
       BeginDrawing();
-      ClearBackground(GRAY);
+      ClearBackground(RAYWHITE);
 
-      // Draw the polygon edges
       for (size_t i = 0; i < polygon.vertices.size(); i++) {
           Vector2 start = polygon.vertices[i];
           Vector2 end = polygon.vertices[(i + 1) % polygon.vertices.size()];
           DrawLineV(start, end, polygon.edgeColors[i]);
       }
 
-      // Draw the circle
       DrawCircleV(circle.position, circle.radius, RED);
 
-      // Draw the render texture
       DrawTextureRec(renderTexture.texture, {0, 0, (float)renderTexture.texture.width, -(float)renderTexture.texture.height}, {0, 0}, WHITE);
 
-      // Display information
-      DrawText(TextFormat("Time: %.2f seconds", timer), 10, 10, 20, WHITE);
-      DrawText(TextFormat("Colored Percentage: %.2f%%", coloredPercentage), 10, 40, 20, WHITE);
-      DrawText(TextFormat("Colored Pixels: %.2f", coloredArea), 10, 60, 20, WHITE);
-      DrawText(TextFormat("Polygon Pixels: %.2f", polygonArea), 10,80, 20, WHITE);
+      DrawText(TextFormat("Time: %.2f seconds", timer), 10, 10, 20, BLACK);
+      DrawText(TextFormat("Colored Percentage: %.2f%%", coloredPercentage), 10, 40, 20, BLACK);
+      DrawText(TextFormat("Colored Pixels: %.2f", coloredArea), 10, 60, 20, BLACK);
+      DrawText(TextFormat("Polygon Pixels: %.2f", polygonArea), 10,80, 20, BLACK);
 
+      DrawText("BACKSPACE to return", 10, GetScreenHeight() - 25, 20, BLACK);
       if (allColored) {
           DrawText("90% of the polygon is colored!", screenWidth / 2 - 120, screenHeight / 2, 20, GREEN);
           DrawText("Press 'R' to reset!", screenWidth / 2 - 100, screenHeight / 2 + 30, 20, GREEN);

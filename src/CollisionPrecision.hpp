@@ -6,32 +6,32 @@
 
 namespace CollisionPrecision {
 
-    Vector2 pos1 = {200, 300};
-    Vector2 pos2 = {700, 281};
-    Vector2 velocity1 = {300, 0}; // High speed
-    Vector2 velocity2 = {0, 0}; // High speed
-    float radius = 20;
-    float mass1 = 1.0f;
-    float mass2 = 1.0f;
+    static Vector2 pos1 = {200, 300};
+    static Vector2 pos2 = {700, 281};
+    static Vector2 velocity1 = {300, 0}; // High speed
+    static Vector2 velocity2 = {0, 0}; // High speed
+    static float radius = 20;
+    static float mass1 = 1.0f;
+    static float mass2 = 1.0f;
 
-    float distance(Vector2 v1, Vector2 v2) {
+    inline float distance(Vector2 v1, Vector2 v2) {
         return (float) sqrt(pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2));
     }
 
-    Vector2 subtract(Vector2 v1, Vector2 v2) {
+    inline Vector2 subtract(Vector2 v1, Vector2 v2) {
         return {v1.x - v2.x, v1.y - v2.y};
     }
 
-    float dotProduct(Vector2 v1, Vector2 v2) {
+    inline float dotProduct(Vector2 v1, Vector2 v2) {
         return v1.x * v2.x + v1.y * v2.y;
     }
 
-    Vector2 normalize(Vector2 v) {
+    inline Vector2 normalize(Vector2 v) {
         float length = (float) sqrt(v.x * v.x + v.y * v.y);
         return {v.x / length, v.y / length};
     }
 
-    bool isCollidingPrecise(Vector2 pos1, Vector2 pos2, Vector2 velocity1, Vector2 velocity2, float radius, float dt)
+    inline bool isCollidingPrecise(Vector2 pos1, Vector2 pos2, Vector2 velocity1, Vector2 velocity2, float radius, float dt)
     {
         Vector2 relativeVelocity = subtract(velocity2, velocity1);
         Vector2 relativePosition = subtract(pos2, pos1);
@@ -55,7 +55,7 @@ namespace CollisionPrecision {
         return (t1 >= 0 && t1 <= dt) || (t2 >= 0 && t2 <= dt);
     }
 
-    float findCollisionTime(Vector2 pos1, Vector2 pos2, Vector2 velocity1, Vector2 velocity2, float radius, float dt)
+    inline float findCollisionTime(Vector2 pos1, Vector2 pos2, Vector2 velocity1, Vector2 velocity2, float radius, float dt)
     {
         Vector2 relativeVelocity = subtract(velocity2, velocity1);
         Vector2 relativePosition = subtract(pos2, pos1);
@@ -73,7 +73,7 @@ namespace CollisionPrecision {
         return (t1 >= 0 && t1 <= dt) ? t1 : t2;
     }
 
-    void resolveCollision(Vector2& pos1, Vector2& pos2, Vector2& v1, Vector2& v2, float m1, float m2)
+    inline void resolveCollision(Vector2& pos1, Vector2& pos2, Vector2& v1, Vector2& v2, float m1, float m2)
     {
         Vector2 collisionNormal = normalize(subtract(pos2, pos1));
 
@@ -95,10 +95,8 @@ namespace CollisionPrecision {
         pos2.y = pos2.y + collisionNormal.y * overlap * 0.5f;
     }
 
-    void Render()
+    inline void Render()
     {
-      while (!WindowShouldClose()) {
-
         float dt = GetFrameTime();
 
         if (isCollidingPrecise(pos1, pos2, velocity1, velocity2, radius, dt)) {
@@ -137,7 +135,7 @@ namespace CollisionPrecision {
         DrawText(text1.c_str(), 10, 10, 20, BLACK);
         DrawText(text2.c_str(), 10, 40, 20, BLACK);
   
-        DrawText("CTRL to return, R to reset positions", 10, GetScreenHeight() - 25, 20, BLACK);
+        DrawText("BACKSPACE to return, R to reset positions", 10, GetScreenHeight() - 25, 20, BLACK);
         EndDrawing();
 
         if (IsKeyPressed(KEY_R)) {
@@ -147,5 +145,4 @@ namespace CollisionPrecision {
             velocity2 = {0, 0};
         }
       }
-    }
 }

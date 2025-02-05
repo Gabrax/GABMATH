@@ -22,12 +22,11 @@ int main()
 
     while (!WindowShouldClose()) 
     {
-        BeginDrawing();
-        ClearBackground(BLACK);
-
         if (state == State::Menu)
         {
-            // Handle menu navigation
+            BeginDrawing();
+            ClearBackground(BLACK);
+
             if (IsKeyPressed(KEY_DOWN)) selectedOption = (selectedOption + 1) % menuItemsCount;
             if (IsKeyPressed(KEY_UP)) selectedOption = (selectedOption - 1 + menuItemsCount) % menuItemsCount;
 
@@ -41,32 +40,29 @@ int main()
                 }
             }
 
-            // Draw menu options
             DrawText("Select a State", 300, 100, 30, WHITE);
             DrawText((selectedOption == 0 ? "> Polygon" : "  Polygon"), 320, 200, 25, WHITE);
             DrawText((selectedOption == 1 ? "> Collision" : "  Collision"), 320, 250, 25, WHITE);
             DrawText((selectedOption == 2 ? "> Central Force Fields" : "  Central Force Fields"), 320, 300, 25, WHITE);
+
+            EndDrawing();
         }
         else
         {
-            // Handle return to menu
             if (IsKeyPressed(KEY_BACKSPACE)) state = State::Menu;
 
             switch (state)
             {
                 case State::Polygon:
                     crp.Render();
-                    DrawText("Press Backspace to return", 10, 10, 20, WHITE);
                     break;
 
                 case State::Collision:
                     CollisionPrecision::Render();
-                    DrawText("Press Backspace to return", 10, 10, 20, WHITE);
                     break;
 
                 case State::CentralForceFields:
                     cff.Render();
-                    DrawText("Press Backspace to return", 10, 10, 20, WHITE);
                     break;
 
                 default:
@@ -74,7 +70,6 @@ int main()
             }
         }
 
-        EndDrawing();
     }
 
     CloseWindow();

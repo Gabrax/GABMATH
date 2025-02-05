@@ -10,7 +10,7 @@
   static const float G = 1.0f;          
   static const float TIME_STEP = 5.0f; 
   enum IntegrationMethod { EULER, RK4 };
-  IntegrationMethod currentMethod = RK4;
+  static IntegrationMethod currentMethod = RK4;
 
   struct PointMass {
       Vector2 position;  
@@ -149,17 +149,18 @@
           float totalEnergy = kineticEnergy + potentialEnergy;
 
           BeginDrawing();
-          ClearBackground(BLACK);
+          ClearBackground(RAYWHITE);
 
           DrawCircleV(body1.position, 10, RED);
           DrawCircleV(body2.position, 10, BLUE);
 
-          DrawText(currentMethod == EULER ? "Method: Euler" : "Method: RK4", 10, 10, 20, WHITE);
-          DrawText("Press 1 for Euler, 2 for RK4", 10, 40, 20, WHITE);
-          DrawText(("Kinetic Energy: " + FormatFloat(kineticEnergy)).c_str(), 10, 80, 20, WHITE);
-          DrawText(("Potential Energy: " + FormatFloat(potentialEnergy)).c_str(), 10, 110, 20, WHITE);
-          DrawText(("Total Energy: " + FormatFloat(totalEnergy)).c_str(), 10, 140, 20, WHITE);
+          DrawText(currentMethod == EULER ? "Method: Euler" : "Method: RK4", 10, 10, 20, BLACK);
+          DrawText("Press 1 for Euler, 2 for RK4", 10, 40, 20, BLACK);
+          DrawText(("Kinetic Energy: " + FormatFloat(kineticEnergy)).c_str(), 10, 80, 20, BLACK);
+          DrawText(("Potential Energy: " + FormatFloat(potentialEnergy)).c_str(), 10, 110, 20, BLACK);
+          DrawText(("Total Energy: " + FormatFloat(totalEnergy)).c_str(), 10, 140, 20, BLACK);
 
+          DrawText("BACKSPACE to return, R to reset positions", 10, GetScreenHeight() - 25, 20, BLACK);
           EndDrawing();
       }
 
