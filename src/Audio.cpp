@@ -4,11 +4,10 @@
 #include <math.h>
 #include "portaudio.h"
 
-#define SAMPLE_RATE         (44100)
 #define PA_SAMPLE_TYPE      paFloat32
 #define FRAMES_PER_BUFFER   (64)
 
-namespace Audio
+namespace AudioInfo
 {
   PaStreamParameters inputParameters, outputParameters;
   PaStream *stream;
@@ -18,9 +17,11 @@ namespace Audio
   ** It may be called at interrupt level on some machines so don't do anything
   ** that could mess up the system like calling malloc() or free().
   */
+  bool record = false;
+  int sample_rate;
 };
 
-using namespace Audio;
+using namespace AudioInfo;
 
 static void AudioErrorCallback()
 {
@@ -31,7 +32,7 @@ static void AudioErrorCallback()
   exit(0);
 }
 
-void Audio::Init()
+Audio::Audio()
 {
   err = Pa_Initialize();
   if( err != paNoError ) AudioErrorCallback();
@@ -51,10 +52,42 @@ void Audio::Init()
       fprintf(stderr,"Error: No default output device.\n");
       AudioErrorCallback();
   }
-  outputParameters.channelCount = 2;       /* stereo output */
+  outputParameters.channelCount = 2;      /* stereo output */
   outputParameters.sampleFormat = PA_SAMPLE_TYPE;
   outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultLowOutputLatency;
   outputParameters.hostApiSpecificStreamInfo = NULL;
+
+  int numDevices = Pa_GetDeviceCount();
+  if (numDevices < 0) {
+      fprintf(stderr, "ERROR: Pa_CountDevices returned 0x%x\n", numDevices);
+  } else {
+      printf("Available audio devices:\n");
+      for (int i = 0; i < numDevices; i++) {
+          const PaDeviceInfo* deviceInfo = Pa_GetDeviceInfo(i);
+          if (!deviceInfo) continue;
+
+          printf("Device %d: %s\n", i, deviceInfo->name);
+          printf("  Max input channels: %d\n", deviceInfo->maxInputChannels);
+          printf("  Max output channels: %d\n", deviceInfo->maxOutputChannels);
+          printf("  Default sample rate: %.2f\n", deviceInfo->defaultSampleRate);
+          printf("  Default low input latency: %.4f s\n", deviceInfo->defaultLowInputLatency);
+          printf("  Default low output latency: %.4f s\n", deviceInfo->defaultLowOutputLatency);
+          printf("  Default high input latency: %.4f s\n", deviceInfo->defaultHighInputLatency);
+          printf("  Default high output latency: %.4f s\n", deviceInfo->defaultHighOutputLatency);
+          printf("\n");
+      }
+  }
+
+  PaDeviceIndex defaultInput = Pa_GetDefaultInputDevice();
+  PaDeviceIndex defaultOutput = Pa_GetDefaultOutputDevice();
+  printf("Default input device index: %d\n", defaultInput);
+  printf("Default output device index: %d\n", defaultOutput);
+}
+
+Audio::~Audio()
+{
+  printf("Finished. gNumNoInputs = %d\n", gNumNoInputs );
+  Pa_Terminate();
 }
 
 typedef float SAMPLE;
@@ -119,29 +152,37 @@ static int fuzzCallback( const void *inputBuffer, void *outputBuffer,
     return paContinue;
 }
 
-void Audio::Record()
+void Audio::Toggle()
 {
-  err = Pa_OpenStream(
-            &stream,
-            &inputParameters,
-            &outputParameters,
-            SAMPLE_RATE,
-            FRAMES_PER_BUFFER,
-            0, /* paClipOff, */  /* we won't output out of range samples so don't bother clipping them */
-            fuzzCallback,
-            NULL );
-  if( err != paNoError ) AudioErrorCallback();
+  record = !record;
 
-  err = Pa_StartStream( stream );
-  if( err != paNoError ) AudioErrorCallback();
+  if(record)
+  {
+    err = Pa_OpenStream(
+              &stream,
+              &inputParameters,
+              &outputParameters,
+              sample_rate,
+              FRAMES_PER_BUFFER,
+              0, /* paClipOff, */  /* we won't output out of range samples so don't bother clipping them */
+              fuzzCallback,
+              NULL );
+    if( err != paNoError ) AudioErrorCallback();
 
-  printf("Hit ENTER to stop program.\n");
-  getchar();
-  err = Pa_CloseStream( stream );
-  if( err != paNoError ) AudioErrorCallback();
+    err = Pa_StartStream( stream );
+    if( err != paNoError ) AudioErrorCallback();
+  }
 
-  printf("Finished. gNumNoInputs = %d\n", gNumNoInputs );
-  Pa_Terminate();
+  if(!record)
+  {
+    err = Pa_CloseStream( stream );
+    if( err != paNoError ) AudioErrorCallback();
+  }
+}
+
+void Audio::SetSR(Sample_Rate sr)
+{
+  sample_rate = static_cast<int>(sr);
 }
 
 
