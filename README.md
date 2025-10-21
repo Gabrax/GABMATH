@@ -1,6 +1,6 @@
 <div align="center">
 
-# Guitar Scale Trainer
+# GABMATH
 
 </div>
 
@@ -16,8 +16,3 @@ https://github.com/Gabrax/GABST.git
 ```bash
 sh ./build.sh --help
 ```
-
-## 👨‍💻 Tech stack
-- [Raylib](https://github.com/raysan5/raylib)
-- [PortAudio](https://github.com/PortAudio/portaudio/)
-

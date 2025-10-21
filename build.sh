@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OS=$(uname)
-EXE_NAME="ScaleTrainer"
+EXE_NAME="GABMATH"
 EXE_EXTENSION=""
 EXE_PATH="$EXE_NAME$EXE_EXTENSION"
 
@@ -26,7 +26,6 @@ for arg in "$@"; do
             echo -e "\n${YELLOW}Options:${RESET}"
             echo -e "  -C{gcc|clang|msvc|cl}  Choose compiler"
             echo -e "  -D{debug|release}      Choose build mode"
-            echo -e "  --help, -h             Show this help"
             exit 0
             ;;
         *)
@@ -76,16 +75,16 @@ if [[ "$RECONFIGURE" == true || ! -f "CMakeCache.txt" ]]; then
             cmake .. $CMAKE_ARGS || { echo -e "${RED}[*] CMake configuration failed${RESET}"; exit 1; }
             ;;
         cl)
-            cmake -G "Ninja" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. || exit 1
+            cmake -G "Ninja" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DEXE_NAME=$EXE_NAME .. || exit 1
             ;;
         msvc)
-            cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. || exit 1
+            cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DEXE_NAME=$EXE_NAME .. || exit 1
             ;;
         clang)
-            cmake -G "Ninja" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ $CMAKE_ARGS -Wno-dev .. || exit 1
+            cmake -G "Ninja" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ $CMAKE_ARGS -Wno-dev -DEXE_NAME=$EXE_NAME .. || exit 1
             ;;
         gcc)
-            cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ $CMAKE_ARGS -Wno-dev .. || exit 1
+            cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ $CMAKE_ARGS -Wno-dev -DEXE_NAME=$EXE_NAME .. || exit 1
             ;;
         *)
             echo -e "${RED}[*] Unsupported compiler: $COMPILER${RESET}"
