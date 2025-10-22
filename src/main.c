@@ -1,8 +1,11 @@
+#define GABMATH_IMPLEMENTATION
 #include "gab_math.h"
 
 int main()
 {
-  float4x4 mat;
+  f2 pos = {100,200};
+
+  f2Print(&pos);
 
   return 0;
 }
