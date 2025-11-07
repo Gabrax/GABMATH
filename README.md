@@ -29,5 +29,9 @@ Run project
 ```bash
 idf.py -p PORT flash
 ```
+Show data
+```bash
+idf.py monitor
+```
 ## Dependencies
 - [esp-idf](https://github.com/espressif/esp-idf.git)
